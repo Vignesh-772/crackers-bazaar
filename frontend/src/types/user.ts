@@ -45,7 +45,7 @@ export interface JwtResponse {
 export interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (credentials: LoginRequest) => Promise<void>;
+  login: (credentials: LoginRequest) => Promise<string>;
   register: (userData: RegisterRequest) => Promise<void>;
   logout: () => void;
   loading: boolean;

@@ -47,19 +47,47 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const login = async (credentials: LoginRequest): Promise<void> => {
+  const login = async (credentials: LoginRequest): Promise<string> => {
     setLoading(true);
     try {
+      console.log('Attempting login with credentials:', credentials);
       const response = await axios.post('http://localhost:8080/api/auth/login', credentials);
       const { token: newToken, ...userData } = response.data;
+      
+      console.log('Login response received:', userData);
       
       setToken(newToken);
       setUser(userData);
       localStorage.setItem('token', newToken);
+      
+      // Return redirect path for navigation
+      const redirectPath = getRedirectPath(userData.role);
+      console.log('Redirect path determined:', redirectPath);
+      return redirectPath;
     } catch (error: any) {
+      console.error('Login error:', error);
       throw new Error(error.response?.data?.error || 'Login failed');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getRedirectPath = (role: string): string => {
+    console.log('getRedirectPath - Role received:', role);
+    switch (role) {
+      case 'ADMIN':
+      case 'DASHBOARD_ADMIN':
+        console.log('getRedirectPath - Returning /admin');
+        return '/admin';
+      case 'MANUFACTURER':
+        console.log('getRedirectPath - Returning /manufacturer');
+        return '/manufacturer';
+      case 'RETAILER':
+        console.log('getRedirectPath - Returning /retailer');
+        return '/retailer';
+      default:
+        console.log('getRedirectPath - Returning /dashboard (default)');
+        return '/dashboard';
     }
   };
 

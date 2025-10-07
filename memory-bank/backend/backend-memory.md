@@ -21,21 +21,29 @@ backend/
 │   ├── controller/          # REST controllers
 │   │   ├── AuthController.java
 │   │   ├── HealthController.java
-│   │   └── UserController.java
+│   │   ├── UserController.java
+│   │   └── AdminController.java
 │   ├── dto/                # Data Transfer Objects
 │   │   ├── JwtResponse.java
 │   │   ├── LoginRequest.java
-│   │   └── RegisterRequest.java
+│   │   ├── RegisterRequest.java
+│   │   ├── ManufacturerRequest.java
+│   │   ├── ManufacturerResponse.java
+│   │   └── ManufacturerVerificationRequest.java
 │   ├── entity/             # JPA entities
 │   │   ├── Role.java
-│   │   └── User.java
+│   │   ├── User.java
+│   │   ├── Manufacturer.java
+│   │   └── ManufacturerStatus.java
 │   ├── repository/         # Data repositories
-│   │   └── UserRepository.java
+│   │   ├── UserRepository.java
+│   │   └── ManufacturerRepository.java
 │   ├── security/          # Security components
 │   │   └── JwtAuthenticationFilter.java
 │   ├── service/           # Business logic
 │   │   ├── UserDetailsServiceImpl.java
-│   │   └── UserService.java
+│   │   ├── UserService.java
+│   │   └── ManufacturerService.java
 │   ├── util/              # Utility classes
 │   │   └── JwtUtil.java
 │   └── CrackersBazaarApplication.java
@@ -78,7 +86,21 @@ backend/
 - Protected endpoints requiring authentication
 - Role-based access control
 
-### 6. Security Configuration
+### 6. Admin Module
+**File**: `controller/AdminController.java`
+- **POST /api/admin/manufacturers**: Create new manufacturer
+- **GET /api/admin/manufacturers**: Get all manufacturers (paginated)
+- **GET /api/admin/manufacturers/{id}**: Get manufacturer by ID
+- **GET /api/admin/manufacturers/status/{status}**: Get manufacturers by status
+- **GET /api/admin/manufacturers/search/company**: Search by company name
+- **PUT /api/admin/manufacturers/{id}**: Update manufacturer
+- **PUT /api/admin/manufacturers/{id}/verify**: Verify manufacturer
+- **DELETE /api/admin/manufacturers/{id}**: Delete manufacturer
+- **GET /api/admin/dashboard/stats**: Get dashboard statistics
+- **GET /api/admin/dashboard/pending-approvals**: Get pending approvals
+- Role-based access control (ADMIN, DASHBOARD_ADMIN only)
+
+### 7. Security Configuration
 **File**: `config/SecurityConfig.java`
 - JWT authentication setup
 - Password encoding with BCrypt
@@ -86,27 +108,57 @@ backend/
 - Security filter chain configuration
 - Role-based authorization
 
-### 7. JWT Utilities
+### 8. JWT Utilities
 **File**: `util/JwtUtil.java`
 - JWT token generation and validation
 - Token expiration handling
 - Role extraction from tokens
 - Secret key management
 
-### 8. User Service
+### 9. User Service
 **File**: `service/UserService.java`
 - Business logic for user operations
 - User creation, validation, and management
 - Password encoding integration
 - Username and email uniqueness checks
 
-### 9. User Repository
+### 10. User Repository
 **File**: `repository/UserRepository.java`
 - JPA repository with custom query methods
 - Username and email existence checks
 - User profile retrieval
 
-### 10. Data Initialization
+### 11. Manufacturer Entity
+**File**: `entity/Manufacturer.java`
+- Complete manufacturer profile with business details
+- Fields: id, companyName, contactPerson, email, phoneNumber, address, city, state, pincode, country
+- Business fields: gstNumber, panNumber, licenseNumber, licenseValidity
+- Status tracking: status, verified, verificationNotes, verifiedBy, verifiedAt
+- Validation annotations for data integrity
+- Automatic timestamp management
+
+### 12. Manufacturer Status
+**File**: `entity/ManufacturerStatus.java`
+- Status enum: PENDING, APPROVED, REJECTED, SUSPENDED, ACTIVE, INACTIVE
+- Used for manufacturer lifecycle management
+
+### 13. Manufacturer Service
+**File**: `service/ManufacturerService.java`
+- Business logic for manufacturer operations
+- CRUD operations with validation
+- Status management and verification workflow
+- Search and filtering capabilities
+- Dashboard statistics generation
+
+### 14. Manufacturer Repository
+**File**: `repository/ManufacturerRepository.java`
+- JPA repository with custom query methods
+- Search by company name, city, state
+- Status-based filtering
+- Pagination support
+- Statistics queries
+
+### 15. Data Initialization
 **File**: `config/DataInitializer.java`
 - Creates default admin users on application startup
 - Default users:
@@ -150,6 +202,45 @@ backend/
 ### Health Check
 - `GET /api/health`
   - Response: Application health status
+
+### Admin Endpoints
+- `POST /api/admin/manufacturers`
+  - Body: ManufacturerRequest
+  - Response: ManufacturerResponse
+  - Access: ADMIN, DASHBOARD_ADMIN
+- `GET /api/admin/manufacturers`
+  - Query: page, size, sortBy, sortDir
+  - Response: Page<ManufacturerResponse>
+  - Access: ADMIN, DASHBOARD_ADMIN
+- `GET /api/admin/manufacturers/{id}`
+  - Response: ManufacturerResponse
+  - Access: ADMIN, DASHBOARD_ADMIN
+- `GET /api/admin/manufacturers/status/{status}`
+  - Query: page, size, sortBy, sortDir
+  - Response: Page<ManufacturerResponse>
+  - Access: ADMIN, DASHBOARD_ADMIN
+- `GET /api/admin/manufacturers/search/company`
+  - Query: companyName
+  - Response: List<ManufacturerResponse>
+  - Access: ADMIN, DASHBOARD_ADMIN
+- `PUT /api/admin/manufacturers/{id}`
+  - Body: ManufacturerRequest
+  - Response: ManufacturerResponse
+  - Access: ADMIN, DASHBOARD_ADMIN
+- `PUT /api/admin/manufacturers/{id}/verify`
+  - Body: ManufacturerVerificationRequest
+  - Headers: X-Admin-Id
+  - Response: ManufacturerResponse
+  - Access: ADMIN, DASHBOARD_ADMIN
+- `DELETE /api/admin/manufacturers/{id}`
+  - Response: Success message
+  - Access: ADMIN, DASHBOARD_ADMIN
+- `GET /api/admin/dashboard/stats`
+  - Response: DashboardStats
+  - Access: ADMIN, DASHBOARD_ADMIN
+- `GET /api/admin/dashboard/pending-approvals`
+  - Response: List<ManufacturerResponse>
+  - Access: ADMIN, DASHBOARD_ADMIN
 
 ## Security Features
 

@@ -49,6 +49,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/health").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/api/users/**").authenticated()
+                .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "DASHBOARD_ADMIN")
                 .anyRequest().authenticated()
             )
             .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))

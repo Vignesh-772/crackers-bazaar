@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
 import { ApiStatus } from '../types/api';
+import RoleQuickActions from './RoleQuickActions';
 
 const Home: React.FC = () => {
+  const { user } = useAuth();
   const [apiStatus, setApiStatus] = useState<ApiStatus | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -51,6 +54,8 @@ const Home: React.FC = () => {
           </div>
         )}
       </div>
+
+      {user && <RoleQuickActions />}
 
       <div id="features" className="features">
         <div className="feature-card">

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { LoginRequest } from '../types/user';
 
 const Login: React.FC = () => {
+  const navigate = useNavigate();
   const [credentials, setCredentials] = useState<LoginRequest>({
     username: '',
     password: ''
@@ -15,8 +17,15 @@ const Login: React.FC = () => {
     setError('');
     
     try {
-      await login(credentials);
+      const redirectPath = await login(credentials);
+      console.log('Login successful, redirecting to:', redirectPath);
+      
+      // Use setTimeout to ensure state is updated before navigation
+      setTimeout(() => {
+        navigate(redirectPath);
+      }, 100);
     } catch (err: any) {
+      console.error('Login failed:', err.message);
       setError(err.message);
     }
   };

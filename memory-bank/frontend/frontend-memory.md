@@ -22,12 +22,21 @@ frontend/
 │   │   ├── Header.tsx
 │   │   ├── Home.tsx
 │   │   ├── Login.tsx
-│   │   └── Register.tsx
+│   │   ├── Register.tsx
+│   │   ├── AdminDashboard.tsx
+│   │   ├── AdminDashboard.css
+│   │   ├── ManufacturerList.tsx
+│   │   ├── ManufacturerList.css
+│   │   ├── ManufacturerForm.tsx
+│   │   ├── ManufacturerForm.css
+│   │   ├── ManufacturerVerification.tsx
+│   │   └── ManufacturerVerification.css
 │   ├── contexts/          # React contexts
 │   │   └── AuthContext.tsx
 │   ├── types/             # TypeScript definitions
 │   │   ├── api.ts
-│   │   └── user.ts
+│   │   ├── user.ts
+│   │   └── manufacturer.ts
 │   ├── App.tsx            # Main application
 │   ├── App.css            # Global styles
 │   ├── index.tsx          # Application entry point
@@ -122,6 +131,38 @@ frontend/
 - Copyright information
 - Additional navigation
 
+### 8. Admin Dashboard
+**File**: `components/AdminDashboard.tsx`
+- Admin-only dashboard for manufacturer management
+- Role-based access control (ADMIN, DASHBOARD_ADMIN)
+- Tabbed interface with multiple sections
+- Dashboard statistics display
+- Navigation to manufacturer management
+
+### 9. Manufacturer List
+**File**: `components/ManufacturerList.tsx`
+- Display all manufacturers with pagination
+- Search and filtering capabilities
+- Status-based filtering
+- Manufacturer card display with key information
+- Action buttons for management
+
+### 10. Manufacturer Form
+**File**: `components/ManufacturerForm.tsx`
+- Form for creating new manufacturers
+- Complete manufacturer profile fields
+- Business information (GST, PAN, License)
+- Form validation and error handling
+- Success feedback and navigation
+
+### 11. Manufacturer Verification
+**File**: `components/ManufacturerVerification.tsx`
+- Admin interface for verifying manufacturers
+- Pending approvals display
+- Detailed manufacturer information view
+- Status update and verification notes
+- Approval/rejection workflow
+
 ## Authentication System
 
 ### State Management
@@ -152,6 +193,7 @@ frontend/
 
 ### Protected Routes
 - `/dashboard` - User dashboard (requires authentication)
+- `/admin` - Admin dashboard (requires ADMIN or DASHBOARD_ADMIN role)
 
 ### Navigation
 - React Router DOM for client-side routing
@@ -211,6 +253,18 @@ frontend/
 
 ### User Endpoints
 - `GET /api/users/profile` - Get user profile
+
+### Admin Endpoints
+- `POST /api/admin/manufacturers` - Create manufacturer
+- `GET /api/admin/manufacturers` - Get all manufacturers
+- `GET /api/admin/manufacturers/{id}` - Get manufacturer by ID
+- `GET /api/admin/manufacturers/status/{status}` - Get manufacturers by status
+- `GET /api/admin/manufacturers/search/company` - Search manufacturers
+- `PUT /api/admin/manufacturers/{id}` - Update manufacturer
+- `PUT /api/admin/manufacturers/{id}/verify` - Verify manufacturer
+- `DELETE /api/admin/manufacturers/{id}` - Delete manufacturer
+- `GET /api/admin/dashboard/stats` - Get dashboard statistics
+- `GET /api/admin/dashboard/pending-approvals` - Get pending approvals
 
 ### Error Handling
 - Network error handling
