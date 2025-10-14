@@ -27,6 +27,39 @@ jwt:
   secret: ${JWT_SECRET:mySecretKey123456789012345678901234567890}
   expiration: ${JWT_EXPIRATION:86400} # 24 hours in seconds
 
+# File Upload Configuration
+app:
+  storage:
+    type: ${STORAGE_TYPE:s3} # Options: s3, local
+  upload:
+    dir: ${UPLOAD_DIR:uploads}
+    max-size: ${UPLOAD_MAX_SIZE:10485760} # 10MB
+    compress-threshold: ${UPLOAD_COMPRESS_THRESHOLD:2097152} # 2MB
+    max-width: ${UPLOAD_MAX_WIDTH:1920}
+    max-height: ${UPLOAD_MAX_HEIGHT:1920}
+    quality: ${UPLOAD_QUALITY:0.85} # 85% quality
+    allowed-types: ${UPLOAD_ALLOWED_TYPES:image/jpeg,image/png,image/gif,image/webp}
+
+# AWS S3 Configuration
+aws:
+  s3:
+    bucket-name: ${AWS_S3_BUCKET_NAME:crackers-bazaar-images}
+    region: ${AWS_S3_REGION:us-east-1}
+    access-key: ${AWS_ACCESS_KEY:your-access-key}
+    secret-key: ${AWS_SECRET_KEY:your-secret-key}
+    # LocalStack Configuration (for local development)
+    localstack:
+      enabled: ${AWS_S3_LOCALSTACK_ENABLED:false}
+      endpoint: ${AWS_S3_LOCALSTACK_ENDPOINT:http://localhost:4566}
+
+# Spring multipart configuration
+spring:
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
+
 logging:
   level:
     com.crackersbazaar: ${LOG_LEVEL_APP:DEBUG}

@@ -1,0 +1,1524 @@
+{
+	"info": {
+		"_postman_id": "crackers-bazaar-api-collection",
+		"name": "Crackers Bazaar API Collection",
+		"description": "Complete API collection for Crackers Bazaar application with authentication, user management, product management, and admin functionality.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/health",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "health"]
+						},
+						"description": "Check if the API server is running"
+					},
+					"response": []
+				},
+				{
+					"name": "User Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
+						},
+						"description": "Login with username and password to get JWT token"
+					},
+					"response": []
+				},
+				{
+					"name": "User Registration",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"retailer1\",\n  \"email\": \"retailer1@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "register"]
+						},
+						"description": "Register a new retailer user (only retailers can self-register)"
+					},
+					"response": []
+				},
+				{
+					"name": "User Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/logout",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "logout"]
+						},
+						"description": "Logout the current user"
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication and health check endpoints"
+		},
+		{
+			"name": "User Management",
+			"item": [
+				{
+					"name": "Get User Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "profile"]
+						},
+						"description": "Get current user's profile information"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manufacturer User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"manufacturer1\",\n  \"email\": \"manufacturer1@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"role\": \"MANUFACTURER\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users/create-manufacturer",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "create-manufacturer"]
+						},
+						"description": "Create a manufacturer user account (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/all",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "all"]
+						},
+						"description": "Get all users (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Users by Role",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/by-role/{{role}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "by-role", "{{role}}"]
+						},
+						"description": "Get users by specific role (Admin/Dashboard Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Activate User",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{userId}}/activate",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "{{userId}}", "activate"]
+						},
+						"description": "Activate a user account (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Deactivate User",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{userId}}/deactivate",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "{{userId}}", "deactivate"]
+						},
+						"description": "Deactivate a user account (Admin only)"
+					},
+					"response": []
+				}
+			],
+			"description": "User management endpoints for profile, creation, and administration"
+		},
+		{
+			"name": "Product Management",
+			"item": [
+				{
+					"name": "Create Product",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Premium Firecrackers\",\n  \"description\": \"High-quality firecrackers for festivals\",\n  \"category\": \"Firecrackers\",\n  \"subcategory\": \"Sound Crackers\",\n  \"brand\": \"Premium Brand\",\n  \"price\": 150.00,\n  \"stockQuantity\": 100,\n  \"sku\": \"FC001\",\n  \"barcode\": \"1234567890123\",\n  \"isActive\": true,\n  \"isFeatured\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/products",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products"]
+						},
+						"description": "Create a new product (Manufacturer only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Product by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/{{productId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "{{productId}}"]
+						},
+						"description": "Get product details by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Product by SKU",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/sku/{{sku}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "sku", "{{sku}}"]
+						},
+						"description": "Get product details by SKU"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Product by Barcode",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/barcode/{{barcode}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "barcode", "{{barcode}}"]
+						},
+						"description": "Get product details by barcode"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products?page=0&size=10&sortBy=createdAt&sortDir=desc",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt"
+								},
+								{
+									"key": "sortDir",
+									"value": "desc"
+								}
+							]
+						},
+						"description": "Get all products with pagination and sorting"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Product",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated Premium Firecrackers\",\n  \"description\": \"Updated description\",\n  \"category\": \"Firecrackers\",\n  \"subcategory\": \"Sound Crackers\",\n  \"brand\": \"Premium Brand\",\n  \"price\": 175.00,\n  \"stockQuantity\": 150,\n  \"sku\": \"FC001\",\n  \"barcode\": \"1234567890123\",\n  \"isActive\": true,\n  \"isFeatured\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/products/{{productId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "{{productId}}"]
+						},
+						"description": "Update a product (Manufacturer only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/{{productId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "{{productId}}"]
+						},
+						"description": "Delete a product (Manufacturer only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Products by Manufacturer",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/manufacturer/{{manufacturerId}}?page=0&size=10&sortBy=createdAt&sortDir=desc",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "manufacturer", "{{manufacturerId}}"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt"
+								},
+								{
+									"key": "sortDir",
+									"value": "desc"
+								}
+							]
+						},
+						"description": "Get products by manufacturer ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Active Products by Manufacturer",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/manufacturer/{{manufacturerId}}/active?page=0&size=10&sortBy=createdAt&sortDir=desc",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "manufacturer", "{{manufacturerId}}", "active"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt"
+								},
+								{
+									"key": "sortDir",
+									"value": "desc"
+								}
+							]
+						},
+						"description": "Get active products by manufacturer ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Products by Category",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/category/{{category}}?page=0&size=10&sortBy=createdAt&sortDir=desc",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "category", "{{category}}"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt"
+								},
+								{
+									"key": "sortDir",
+									"value": "desc"
+								}
+							]
+						},
+						"description": "Get products by category"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Products by Subcategory",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/subcategory/{{subcategory}}?page=0&size=10&sortBy=createdAt&sortDir=desc",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "subcategory", "{{subcategory}}"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt"
+								},
+								{
+									"key": "sortDir",
+									"value": "desc"
+								}
+							]
+						},
+						"description": "Get products by subcategory"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Products by Price Range",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/price-range?minPrice=100&maxPrice=500&page=0&size=10&sortBy=price&sortDir=asc",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "price-range"],
+							"query": [
+								{
+									"key": "minPrice",
+									"value": "100"
+								},
+								{
+									"key": "maxPrice",
+									"value": "500"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "price"
+								},
+								{
+									"key": "sortDir",
+									"value": "asc"
+								}
+							]
+						},
+						"description": "Get products within a price range"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Products by Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/search/name?name={{searchTerm}}&page=0&size=10&sortBy=name&sortDir=asc",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "search", "name"],
+							"query": [
+								{
+									"key": "name",
+									"value": "{{searchTerm}}"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "name"
+								},
+								{
+									"key": "sortDir",
+									"value": "asc"
+								}
+							]
+						},
+						"description": "Search products by name"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Products by Description",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/search/description?description={{searchTerm}}&page=0&size=10&sortBy=name&sortDir=asc",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "search", "description"],
+							"query": [
+								{
+									"key": "description",
+									"value": "{{searchTerm}}"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "name"
+								},
+								{
+									"key": "sortDir",
+									"value": "asc"
+								}
+							]
+						},
+						"description": "Search products by description"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Products by Brand",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/brand/{{brand}}?page=0&size=10&sortBy=name&sortDir=asc",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "brand", "{{brand}}"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "name"
+								},
+								{
+									"key": "sortDir",
+									"value": "asc"
+								}
+							]
+						},
+						"description": "Get products by brand"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Featured Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/featured?page=0&size=10&sortBy=createdAt&sortDir=desc",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "featured"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt"
+								},
+								{
+									"key": "sortDir",
+									"value": "desc"
+								}
+							]
+						},
+						"description": "Get featured products"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Low Stock Products",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/low-stock?threshold=10&page=0&size=10&sortBy=stockQuantity&sortDir=asc",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "low-stock"],
+							"query": [
+								{
+									"key": "threshold",
+									"value": "10"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "stockQuantity"
+								},
+								{
+									"key": "sortDir",
+									"value": "asc"
+								}
+							]
+						},
+						"description": "Get low stock products (Manufacturer only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Out of Stock Products",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/out-of-stock?page=0&size=10&sortBy=name&sortDir=asc",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "out-of-stock"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "name"
+								},
+								{
+									"key": "sortDir",
+									"value": "asc"
+								}
+							]
+						},
+						"description": "Get out of stock products (Manufacturer only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Toggle Product Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/{{productId}}/toggle-status",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "{{productId}}", "toggle-status"]
+						},
+						"description": "Toggle product active/inactive status (Manufacturer only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Toggle Featured Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/{{productId}}/toggle-featured",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "{{productId}}", "toggle-featured"]
+						},
+						"description": "Toggle product featured status (Manufacturer only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Stock",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/{{productId}}/stock?stockQuantity=200",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "{{productId}}", "stock"],
+							"query": [
+								{
+									"key": "stockQuantity",
+									"value": "200"
+								}
+							]
+						},
+						"description": "Update product stock quantity (Manufacturer only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Manufacturer Product Stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/manufacturer/{{manufacturerId}}/stats",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "manufacturer", "{{manufacturerId}}", "stats"]
+						},
+						"description": "Get product statistics for a manufacturer (Manufacturer only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Category Product Stats",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/category/{{category}}/stats",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products", "category", "{{category}}", "stats"]
+						},
+						"description": "Get product statistics for a category"
+					},
+					"response": []
+				}
+			],
+			"description": "Product management endpoints for CRUD operations, search, and filtering"
+		},
+		{
+			"name": "Admin Management",
+			"item": [
+				{
+					"name": "Create Manufacturer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"companyName\": \"Premium Fireworks Ltd\",\n  \"contactPerson\": \"John Smith\",\n  \"email\": \"contact@premiumfireworks.com\",\n  \"phone\": \"+91-9876543210\",\n  \"address\": \"123 Industrial Area\",\n  \"city\": \"Mumbai\",\n  \"state\": \"Maharashtra\",\n  \"pincode\": \"400001\",\n  \"gstNumber\": \"27ABCDE1234F1Z5\",\n  \"licenseNumber\": \"LIC123456\",\n  \"licenseExpiry\": \"2025-12-31\",\n  \"businessType\": \"Manufacturer\",\n  \"yearsInBusiness\": 10,\n  \"annualTurnover\": 5000000,\n  \"employeeCount\": 50\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/manufacturers",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "manufacturers"]
+						},
+						"description": "Create a new manufacturer (Admin/Dashboard Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Manufacturers",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/manufacturers?page=0&size=10&sortBy=createdAt&sortDir=desc",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "manufacturers"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt"
+								},
+								{
+									"key": "sortDir",
+									"value": "desc"
+								}
+							]
+						},
+						"description": "Get all manufacturers with pagination (Admin/Dashboard Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Manufacturer by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/manufacturers/{{manufacturerId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "manufacturers", "{{manufacturerId}}"]
+						},
+						"description": "Get manufacturer by ID (Admin/Dashboard Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Manufacturer by Email",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/manufacturers/email/{{email}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "manufacturers", "email", "{{email}}"]
+						},
+						"description": "Get manufacturer by email (Admin/Dashboard Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Manufacturers by Status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/manufacturers/status/{{status}}?page=0&size=10&sortBy=createdAt&sortDir=desc",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "manufacturers", "status", "{{status}}"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt"
+								},
+								{
+									"key": "sortDir",
+									"value": "desc"
+								}
+							]
+						},
+						"description": "Get manufacturers by status (Admin/Dashboard Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Manufacturers by Company Name",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/manufacturers/search/company?companyName={{companyName}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "manufacturers", "search", "company"],
+							"query": [
+								{
+									"key": "companyName",
+									"value": "{{companyName}}"
+								}
+							]
+						},
+						"description": "Search manufacturers by company name (Admin/Dashboard Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Manufacturers by City",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/manufacturers/search/city?city={{city}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "manufacturers", "search", "city"],
+							"query": [
+								{
+									"key": "city",
+									"value": "{{city}}"
+								}
+							]
+						},
+						"description": "Get manufacturers by city (Admin/Dashboard Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Manufacturers by State",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/manufacturers/search/state?state={{state}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "manufacturers", "search", "state"],
+							"query": [
+								{
+									"key": "state",
+									"value": "{{state}}"
+								}
+							]
+						},
+						"description": "Get manufacturers by state (Admin/Dashboard Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Manufacturer",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"companyName\": \"Updated Premium Fireworks Ltd\",\n  \"contactPerson\": \"John Smith\",\n  \"email\": \"contact@premiumfireworks.com\",\n  \"phone\": \"+91-9876543210\",\n  \"address\": \"123 Industrial Area\",\n  \"city\": \"Mumbai\",\n  \"state\": \"Maharashtra\",\n  \"pincode\": \"400001\",\n  \"gstNumber\": \"27ABCDE1234F1Z5\",\n  \"licenseNumber\": \"LIC123456\",\n  \"licenseExpiry\": \"2025-12-31\",\n  \"businessType\": \"Manufacturer\",\n  \"yearsInBusiness\": 10,\n  \"annualTurnover\": 5000000,\n  \"employeeCount\": 50\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/manufacturers/{{manufacturerId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "manufacturers", "{{manufacturerId}}"]
+						},
+						"description": "Update manufacturer information (Admin/Dashboard Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Manufacturer",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "X-Admin-Id",
+								"value": "{{adminId}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"isVerified\": true,\n  \"verificationNotes\": \"All documents verified successfully\",\n  \"verifiedBy\": \"Admin User\",\n  \"verificationDate\": \"2024-01-15\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/manufacturers/{{manufacturerId}}/verify",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "manufacturers", "{{manufacturerId}}", "verify"]
+						},
+						"description": "Verify a manufacturer (Admin/Dashboard Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Manufacturer",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/manufacturers/{{manufacturerId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "manufacturers", "{{manufacturerId}}"]
+						},
+						"description": "Delete a manufacturer (Admin/Dashboard Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Dashboard Stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/dashboard/stats",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "dashboard", "stats"]
+						},
+						"description": "Get dashboard statistics (Admin/Dashboard Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Pending Approvals",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/dashboard/pending-approvals",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "dashboard", "pending-approvals"]
+						},
+						"description": "Get pending manufacturer approvals (Admin/Dashboard Admin only)"
+					},
+					"response": []
+				}
+			],
+			"description": "Admin management endpoints for manufacturer administration and dashboard"
+		},
+		{
+			"name": "Manufacturer User Management",
+			"item": [
+				{
+					"name": "Create Manufacturer User by ID",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/manufacturer-users/create/{{manufacturerId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "manufacturer-users", "create", "{{manufacturerId}}"]
+						},
+						"description": "Create user account for manufacturer by ID (Admin/Dashboard Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manufacturer User by Email",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/manufacturer-users/create-by-email?email={{email}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "manufacturer-users", "create-by-email"],
+							"query": [
+								{
+									"key": "email",
+									"value": "{{email}}"
+								}
+							]
+						},
+						"description": "Create user account for manufacturer by email (Admin/Dashboard Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Manufacturer Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/manufacturer-users/reset-password?email={{email}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "manufacturer-users", "reset-password"],
+							"query": [
+								{
+									"key": "email",
+									"value": "{{email}}"
+								}
+							]
+						},
+						"description": "Reset password for a manufacturer (Admin/Dashboard Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Check Manufacturer Account",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/manufacturer-users/check-account?email={{email}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "manufacturer-users", "check-account"],
+							"query": [
+								{
+									"key": "email",
+									"value": "{{email}}"
+								}
+							]
+						},
+						"description": "Check if manufacturer has user account (Admin/Dashboard Admin only)"
+					},
+					"response": []
+				}
+			],
+			"description": "Manufacturer user account management endpoints"
+		},
+		{
+			"name": "File Upload",
+			"item": [
+				{
+					"name": "Upload Product Images",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "files",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "productId",
+									"value": "{{productId}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/upload/product-images",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "upload", "product-images"]
+						},
+						"description": "Upload multiple product images (Manufacturer only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Single Image",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "productId",
+									"value": "{{productId}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/upload/single-image",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "upload", "single-image"]
+						},
+						"description": "Upload a single product image (Manufacturer only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product Images",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/upload/product-images/{{productId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "upload", "product-images", "{{productId}}"]
+						},
+						"description": "Delete all images for a product (Manufacturer only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Single Image",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/upload/image?imageUrl={{imageUrl}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "upload", "image"],
+							"query": [
+								{
+									"key": "imageUrl",
+									"value": "{{imageUrl}}"
+								}
+							]
+						},
+						"description": "Delete a specific image (Manufacturer only)"
+					},
+					"response": []
+				}
+			],
+			"description": "File upload and management endpoints for product images"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "jwtToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "productId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "manufacturerId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "adminId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "role",
+			"value": "RETAILER",
+			"type": "string"
+		},
+		{
+			"key": "status",
+			"value": "PENDING",
+			"type": "string"
+		},
+		{
+			"key": "category",
+			"value": "Firecrackers",
+			"type": "string"
+		},
+		{
+			"key": "subcategory",
+			"value": "Sound Crackers",
+			"type": "string"
+		},
+		{
+			"key": "brand",
+			"value": "Premium Brand",
+			"type": "string"
+		},
+		{
+			"key": "searchTerm",
+			"value": "firecrackers",
+			"type": "string"
+		},
+		{
+			"key": "companyName",
+			"value": "Premium Fireworks",
+			"type": "string"
+		},
+		{
+			"key": "city",
+			"value": "Mumbai",
+			"type": "string"
+		},
+		{
+			"key": "state",
+			"value": "Maharashtra",
+			"type": "string"
+		},
+		{
+			"key": "email",
+			"value": "manufacturer@example.com",
+			"type": "string"
+		},
+		{
+			"key": "sku",
+			"value": "FC001",
+			"type": "string"
+		},
+		{
+			"key": "barcode",
+			"value": "1234567890123",
+			"type": "string"
+		},
+		{
+			"key": "imageUrl",
+			"value": "https://example.com/image.jpg",
+			"type": "string"
+		}
+	]
+}

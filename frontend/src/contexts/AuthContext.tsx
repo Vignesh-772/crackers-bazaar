@@ -1,13 +1,26 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, LoginRequest, RegisterRequest, AuthContextType } from '../types/user';
-import { AuthService } from '../services/AuthService';
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
+import { authApi } from "@/lib/api";
+import type { JwtResponse, LoginRequest, RegisterRequest, User, Role } from "@/types";
+import { toast } from "sonner";
+
+interface AuthContextType {
+  user: User | null;
+  token: string | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  login: (credentials: LoginRequest) => Promise<void>;
+  register: (data: RegisterRequest) => Promise<void>;
+  logout: () => void;
+  hasRole: (role: Role | Role[]) => boolean;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
@@ -16,126 +29,112 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [initialized, setInitialized] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
-  // Initialize auth state on app start
+  // Load user and token from localStorage on mount
   useEffect(() => {
-    const initializeAuth = () => {
-      const storedUser = AuthService.getCurrentUser();
-      const storedToken = AuthService.getToken();
-      
-      if (storedUser && storedToken) {
-        setUser(storedUser);
-        setToken(storedToken);
-        AuthService.initializeAuth();
-      }
-      
-      setInitialized(true);
-    };
+    const storedToken = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
 
-    initializeAuth();
+    if (storedToken && storedUser) {
+      try {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error("Failed to parse stored user:", error);
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+      }
+    }
+    setIsLoading(false);
   }, []);
 
-  const login = async (credentials: LoginRequest): Promise<string> => {
-    setLoading(true);
+  const login = async (credentials: LoginRequest) => {
     try {
-      console.log('Attempting login with credentials:', credentials);
-      const userData = await AuthService.login(credentials);
+      const response: JwtResponse = await authApi.login(credentials);
       
-      console.log('Login response received:', userData);
+      const userData: User = {
+        id: response.id,
+        username: response.username,
+        email: response.email,
+        firstName: response.firstName,
+        lastName: response.lastName,
+        role: response.role,
+      };
+
+      setToken(response.token);
+      setUser(userData);
       
-      setToken(userData.token);
-      setUser({
-        id: userData.id,
-        username: userData.username,
-        email: userData.email,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        role: userData.role,
-        active: true, // Default to active for logged in users
-        createdAt: new Date().toISOString(), // Use current time as fallback
-        updatedAt: new Date().toISOString() // Use current time as fallback
-      });
-      
-      // Return redirect path for navigation
-      const redirectPath = getRedirectPath(userData.role);
-      console.log('Redirect path determined:', redirectPath);
-      return redirectPath;
+      localStorage.setItem("token", response.token);
+      localStorage.setItem("user", JSON.stringify(userData));
+
+      toast.success(`Welcome back, ${userData.firstName}!`);
+
+      // Navigate based on role
+      switch (userData.role) {
+        case "ADMIN":
+        case "DASHBOARD_ADMIN":
+          navigate("/admin");
+          break;
+        case "MANUFACTURER":
+          navigate("/manufacturer");
+          break;
+        case "RETAILER":
+          navigate("/dashboard");
+          break;
+        default:
+          navigate("/");
+      }
     } catch (error: any) {
-      console.error('Login error:', error);
-      throw new Error(error.message || 'Login failed');
-    } finally {
-      setLoading(false);
+      const errorMessage = error.response?.data?.error || "Login failed. Please try again.";
+      toast.error(errorMessage);
+      throw error;
     }
   };
 
-  const getRedirectPath = (role: string): string => {
-    console.log('getRedirectPath - Role received:', role);
-    switch (role) {
-      case 'ADMIN':
-      case 'DASHBOARD_ADMIN':
-        console.log('getRedirectPath - Returning /admin');
-        return '/admin';
-      case 'MANUFACTURER':
-        console.log('getRedirectPath - Returning /manufacturer');
-        return '/manufacturer';
-      case 'RETAILER':
-        console.log('getRedirectPath - Returning /retailer');
-        return '/retailer';
-      default:
-        console.log('getRedirectPath - Returning /dashboard (default)');
-        return '/dashboard';
-    }
-  };
-
-  const register = async (userData: RegisterRequest): Promise<void> => {
-    setLoading(true);
+  const register = async (data: RegisterRequest) => {
     try {
-      await AuthService.register(userData);
+      await authApi.register(data);
+      toast.success("Registration successful! Please login with your credentials.");
+      // Don't auto-login, let user login manually
     } catch (error: any) {
-      throw new Error(error.message || 'Registration failed');
-    } finally {
-      setLoading(false);
+      const errorMessage = error.response?.data?.error || "Registration failed. Please try again.";
+      toast.error(errorMessage);
+      throw error;
     }
   };
 
-  const logout = async () => {
-    try {
-      await AuthService.logout();
-    } catch (error) {
-      console.warn('Logout error:', error);
-    } finally {
-      setUser(null);
-      setToken(null);
+  const logout = () => {
+    setUser(null);
+    setToken(null);
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    toast.info("You have been logged out.");
+    navigate("/auth");
+  };
+
+  const hasRole = (role: Role | Role[]): boolean => {
+    if (!user) return false;
+    if (Array.isArray(role)) {
+      return role.includes(user.role);
     }
+    return user.role === role;
   };
 
   const value: AuthContextType = {
     user,
     token,
+    isAuthenticated: !!user && !!token,
+    isLoading,
     login,
     register,
     logout,
-    loading
+    hasRole,
   };
-
-  // Show loading while initializing auth state
-  if (!initialized) {
-    return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh' 
-      }}>
-        <div>Loading...</div>
-      </div>
-    );
-  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

@@ -59,14 +59,7 @@ public class ManufacturerService {
             throw new RuntimeException("User with email " + request.getEmail() + " already exists");
         }
         
-        // Create manufacturer
-        Manufacturer manufacturer = new Manufacturer();
-        setManufacturer(request, manufacturer);
-        manufacturer.setStatus(ManufacturerStatus.PENDING);
-        manufacturer.setVerified(false);
-        Manufacturer savedManufacturer = manufacturerRepository.save(manufacturer);
-        
-        // Create user account for the manufacturer
+        // Create user account for the manufacturer first
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
@@ -82,12 +75,22 @@ public class ManufacturerService {
         
         User savedUser = userRepository.save(user);
         
+        // Create manufacturer and link to user
+        Manufacturer manufacturer = new Manufacturer();
+        setManufacturer(request, manufacturer);
+        manufacturer.setStatus(ManufacturerStatus.PENDING);
+        manufacturer.setVerified(false);
+        manufacturer.setUser(savedUser);  // Link the user to manufacturer
+        
+        Manufacturer savedManufacturer = manufacturerRepository.save(manufacturer);
+        
         System.out.println("Manufacturer and User account created:");
         System.out.println("Manufacturer ID: " + savedManufacturer.getId());
         System.out.println("User ID: " + savedUser.getId());
         System.out.println("Username: " + savedUser.getUsername());
         System.out.println("Email: " + savedUser.getEmail());
         System.out.println("Status: PENDING (awaiting admin approval)");
+        System.out.println("User linked to Manufacturer via user_id: " + savedUser.getId());
         
         return new ManufacturerResponse(savedManufacturer);
     }
@@ -197,10 +200,19 @@ public class ManufacturerService {
     }
     
     public void deleteManufacturer(Long id) {
-        if (!manufacturerRepository.existsById(id)) {
-            throw new RuntimeException("Manufacturer not found with id: " + id);
+        Manufacturer manufacturer = manufacturerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Manufacturer not found with id: " + id));
+        
+        // Get user before deleting (for logging)
+        User user = manufacturer.getUser();
+        
+        // Delete manufacturer (cascade will delete user due to CascadeType.REMOVE)
+        manufacturerRepository.delete(manufacturer);
+        
+        System.out.println("Manufacturer deleted: " + manufacturer.getCompanyName());
+        if (user != null) {
+            System.out.println("Associated user account also deleted: " + user.getUsername());
         }
-        manufacturerRepository.deleteById(id);
     }
     
     public Long getManufacturerCountByStatus(ManufacturerStatus status) {
@@ -213,6 +225,20 @@ public class ManufacturerService {
     
     public Long getUnverifiedManufacturerCount() {
         return manufacturerRepository.countByVerified(false);
+    }
+    
+    public ManufacturerResponse getManufacturerByUserId(Long userId) {
+        Manufacturer manufacturer = manufacturerRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Manufacturer not found for user id: " + userId));
+        return new ManufacturerResponse(manufacturer);
+    }
+    
+    public ManufacturerResponse getManufacturerByUserEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+        Manufacturer manufacturer = manufacturerRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Manufacturer profile not found for user: " + email));
+        return new ManufacturerResponse(manufacturer);
     }
 
     private void setManufacturer(ManufacturerRequest request, Manufacturer manufacturer) {
@@ -232,9 +258,11 @@ public class ManufacturerService {
         // Parse license validity if provided
         if (request.getLicenseValidity() != null && !request.getLicenseValidity().isEmpty()) {
             try {
-                LocalDateTime licenseValidity = LocalDateTime.parse(request.getLicenseValidity());
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+                LocalDateTime licenseValidity = LocalDateTime.parse(request.getLicenseValidity(), formatter);
                 manufacturer.setLicenseValidity(licenseValidity);
             } catch (Exception e) {
+                e.printStackTrace();
                 throw new RuntimeException("Invalid license validity date format");
             }
         }

@@ -5,6 +5,7 @@ import com.crackersbazaar.dto.ProductResponse;
 import com.crackersbazaar.entity.Manufacturer;
 import com.crackersbazaar.repository.ManufacturerRepository;
 import com.crackersbazaar.service.ProductService;
+import com.crackersbazaar.util.SecurityUtils;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -14,8 +15,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -24,7 +23,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/products")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "http://localhost:5173"})
 public class ProductController {
     
     @Autowired
@@ -33,21 +32,23 @@ public class ProductController {
     @Autowired
     private ManufacturerRepository manufacturerRepository;
     
+    @Autowired
+    private SecurityUtils securityUtils;
+    
     // Product CRUD Operations
     
     @PostMapping
     @PreAuthorize("hasRole('MANUFACTURER')")
     public ResponseEntity<?> createProduct(@Valid @RequestBody ProductRequest request) {
         try {
-            // Get the authenticated user's email
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String userEmail = authentication.getName();
+            // Get manufacturer ID directly from JWT token (via user ID and FK relationship)
+            Long manufacturerId = securityUtils.getCurrentManufacturerId();
             
-            // Find manufacturer by email
-            Manufacturer manufacturer = manufacturerRepository.findByEmail(userEmail)
-                    .orElseThrow(() -> new RuntimeException("Manufacturer not found for email: " + userEmail));
+            if (manufacturerId == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Manufacturer profile not found. Please contact admin."));
+            }
             
-            ProductResponse response = productService.createProduct(request, manufacturer.getId());
+            ProductResponse response = productService.createProduct(request, manufacturerId);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

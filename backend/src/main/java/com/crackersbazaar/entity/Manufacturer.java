@@ -79,6 +79,10 @@ public class Manufacturer {
     @Column(name = "license_validity")
     private LocalDateTime licenseValidity;
     
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "user_id", unique = true)
+    private User user;
+    
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20)
     private ManufacturerStatus status = ManufacturerStatus.PENDING;
@@ -286,5 +290,13 @@ public class Manufacturer {
     
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+    
+    public User getUser() {
+        return user;
+    }
+    
+    public void setUser(User user) {
+        this.user = user;
     }
 }

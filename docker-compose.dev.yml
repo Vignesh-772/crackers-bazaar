@@ -1,5 +1,8 @@
 version: '3.8'
 
+# Development environment with LocalStack S3
+# Usage: docker-compose -f docker-compose.dev.yml up -d
+
 services:
   postgres:
     image: postgres:15-alpine
@@ -12,10 +15,15 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_dev_data:/var/lib/postgresql/data
+      - postgres_data_dev:/var/lib/postgresql/data
       - ./init-scripts:/docker-entrypoint-initdb.d
     networks:
-      - crackers-network
+      - crackers-network-dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -27,19 +35,48 @@ services:
     ports:
       - "5050:80"
     volumes:
-      - pgadmin_dev_data:/var/lib/pgadmin
+      - pgadmin_data_dev:/var/lib/pgadmin
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
-      - crackers-network
+      - crackers-network-dev
+
+  localstack:
+    image: localstack/localstack:latest
+    container_name: crackers-bazaar-localstack-dev
+    restart: unless-stopped
+    environment:
+      - SERVICES=s3
+      - DEBUG=1
+      - DATA_DIR=/tmp/localstack/data
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - EDGE_PORT=4566
+    ports:
+      - "4566:4566"  # LocalStack edge service
+    volumes:
+      - localstack_data_dev:/tmp/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./scripts/localstack-init.sh:/etc/localstack/init/ready.d/init.sh
+    networks:
+      - crackers-network-dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
-  postgres_dev_data:
+  postgres_data_dev:
     driver: local
-  pgadmin_dev_data:
+  pgadmin_data_dev:
+    driver: local
+  localstack_data_dev:
     driver: local
 
 networks:
-  crackers-network:
+  crackers-network-dev:
     driver: bridge
-

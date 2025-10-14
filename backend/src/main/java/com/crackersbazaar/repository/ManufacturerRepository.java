@@ -2,6 +2,7 @@ package com.crackersbazaar.repository;
 
 import com.crackersbazaar.entity.Manufacturer;
 import com.crackersbazaar.entity.ManufacturerStatus;
+import com.crackersbazaar.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,6 +17,10 @@ import java.util.Optional;
 public interface ManufacturerRepository extends JpaRepository<Manufacturer, Long> {
     
     Optional<Manufacturer> findByEmail(String email);
+    
+    Optional<Manufacturer> findByUser(User user);
+    
+    Optional<Manufacturer> findByUserId(Long userId);
     
     List<Manufacturer> findByStatus(ManufacturerStatus status);
     

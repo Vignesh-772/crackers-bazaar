@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 public class ManufacturerResponse {
     
     private Long id;
+    private Long userId;
     private String companyName;
     private String contactPerson;
     private String email;
@@ -34,6 +35,7 @@ public class ManufacturerResponse {
     
     public ManufacturerResponse(Manufacturer manufacturer) {
         this.id = manufacturer.getId();
+        this.userId = manufacturer.getUser() != null ? manufacturer.getUser().getId() : null;
         this.companyName = manufacturer.getCompanyName();
         this.contactPerson = manufacturer.getContactPerson();
         this.email = manufacturer.getEmail();
@@ -63,6 +65,14 @@ public class ManufacturerResponse {
     
     public void setId(Long id) {
         this.id = id;
+    }
+    
+    public Long getUserId() {
+        return userId;
+    }
+    
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
     
     public String getCompanyName() {

@@ -5,8 +5,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,6 +24,18 @@ public class FileUploadService {
     
     @Value("${app.upload.max-size:10485760}") // 10MB
     private long maxFileSize;
+    
+    @Value("${app.upload.compress-threshold:2097152}") // 2MB - compress if larger
+    private long compressThreshold;
+    
+    @Value("${app.upload.max-width:1920}")
+    private int maxWidth;
+    
+    @Value("${app.upload.max-height:1920}")
+    private int maxHeight;
+    
+    @Value("${app.upload.quality:0.85}") // 85% quality for compression
+    private double compressionQuality;
     
     @Value("${app.upload.allowed-types:image/jpeg,image/png,image/gif,image/webp}")
     private String allowedTypes;
@@ -48,14 +61,24 @@ public class FileUploadService {
             String extension = getFileExtension(originalFilename);
             String filename = UUID.randomUUID().toString() + extension;
             
-            // Save original file
             Path filePath = productPath.resolve(filename);
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            
+            // Compress and save image
+            long originalSize = file.getSize();
+            compressAndSaveImage(file, filePath);
+            long compressedSize = Files.size(filePath);
+            
+            // Log compression results
+            if (originalSize > compressThreshold) {
+                double compressionRatio = ((double)(originalSize - compressedSize) / originalSize) * 100;
+                System.out.println(String.format("Image compressed: %s -> %s (%.1f%% reduction)", 
+                    formatFileSize(originalSize), formatFileSize(compressedSize), compressionRatio));
+            }
             
             // Create thumbnail
             createThumbnail(filePath.toString(), productPath.resolve("thumb_" + filename).toString());
             
-            // Generate URL (you might want to use a proper URL builder)
+            // Generate URL
             String fileUrl = "/uploads/products/" + productId + "/" + filename;
             uploadedUrls.add(fileUrl);
         }
@@ -80,9 +103,19 @@ public class FileUploadService {
         String extension = getFileExtension(originalFilename);
         String filename = UUID.randomUUID().toString() + extension;
         
-        // Save original file
         Path filePath = productPath.resolve(filename);
-        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        
+        // Compress and save image
+        long originalSize = file.getSize();
+        compressAndSaveImage(file, filePath);
+        long compressedSize = Files.size(filePath);
+        
+        // Log compression results
+        if (originalSize > compressThreshold) {
+            double compressionRatio = ((double)(originalSize - compressedSize) / originalSize) * 100;
+            System.out.println(String.format("Image compressed: %s -> %s (%.1f%% reduction)", 
+                formatFileSize(originalSize), formatFileSize(compressedSize), compressionRatio));
+        }
         
         // Create thumbnail
         createThumbnail(filePath.toString(), productPath.resolve("thumb_" + filename).toString());
@@ -162,10 +195,98 @@ public class FileUploadService {
             Thumbnails.of(originalPath)
                 .size(300, 300)
                 .keepAspectRatio(true)
+                .outputQuality(0.8)
                 .toFile(thumbnailPath);
         } catch (Exception e) {
             // Log error but don't fail the upload
             System.err.println("Failed to create thumbnail: " + e.getMessage());
         }
+    }
+    
+    /**
+     * Compress and save image if it exceeds threshold
+     */
+    private void compressAndSaveImage(MultipartFile file, Path targetPath) throws IOException {
+        long fileSize = file.getSize();
+        
+        // If file is small enough, save directly
+        if (fileSize <= compressThreshold) {
+            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+            return;
+        }
+        
+        // For larger files, compress using Thumbnailator
+        try {
+            BufferedImage originalImage = ImageIO.read(file.getInputStream());
+            
+            if (originalImage == null) {
+                // Not an image or corrupt, save as-is
+                Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+                return;
+            }
+            
+            int originalWidth = originalImage.getWidth();
+            int originalHeight = originalImage.getHeight();
+            
+            // Calculate new dimensions if image is too large
+            int targetWidth = Math.min(originalWidth, maxWidth);
+            int targetHeight = Math.min(originalHeight, maxHeight);
+            
+            // Compress and resize
+            Thumbnails.of(originalImage)
+                .size(targetWidth, targetHeight)
+                .keepAspectRatio(true)
+                .outputQuality(compressionQuality)
+                .toFile(targetPath.toFile());
+                
+        } catch (Exception e) {
+            System.err.println("Compression failed, saving original: " + e.getMessage());
+            // Fallback: save original if compression fails
+            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+    
+    /**
+     * Format file size for human-readable output
+     */
+    private String formatFileSize(long size) {
+        if (size < 1024) return size + " B";
+        int exp = (int) (Math.log(size) / Math.log(1024));
+        String pre = "KMGTPE".charAt(exp - 1) + "";
+        return String.format("%.1f %sB", size / Math.pow(1024, exp), pre);
+    }
+    
+    /**
+     * Upload image for temporary storage (before product is created)
+     */
+    public String uploadTempImage(MultipartFile file) throws IOException {
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("File is empty");
+        }
+        
+        validateFile(file);
+        
+        // Create temp directory
+        String tempDir = uploadDir + "/temp";
+        Path tempPath = Paths.get(tempDir);
+        Files.createDirectories(tempPath);
+        
+        // Generate unique filename
+        String originalFilename = file.getOriginalFilename();
+        String extension = getFileExtension(originalFilename);
+        String filename = UUID.randomUUID().toString() + extension;
+        
+        Path filePath = tempPath.resolve(filename);
+        
+        // Compress and save
+        long originalSize = file.getSize();
+        compressAndSaveImage(file, filePath);
+        long compressedSize = Files.size(filePath);
+        
+        System.out.println(String.format("Temp image uploaded: %s (compressed from %s to %s)", 
+            filename, formatFileSize(originalSize), formatFileSize(compressedSize)));
+        
+        // Generate URL
+        return "/uploads/temp/" + filename;
     }
 }

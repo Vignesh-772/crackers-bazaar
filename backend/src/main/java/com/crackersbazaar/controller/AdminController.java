@@ -5,6 +5,7 @@ import com.crackersbazaar.dto.ManufacturerResponse;
 import com.crackersbazaar.dto.ManufacturerVerificationRequest;
 import com.crackersbazaar.entity.ManufacturerStatus;
 import com.crackersbazaar.service.ManufacturerService;
+import com.crackersbazaar.util.SecurityUtils;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,11 +23,14 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "http://localhost:5173"})
 public class AdminController {
     
     @Autowired
     private ManufacturerService manufacturerService;
+    
+    @Autowired
+    private SecurityUtils securityUtils;
     
     // Manufacturer Management Endpoints
     
@@ -151,9 +155,15 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('DASHBOARD_ADMIN')")
     public ResponseEntity<?> verifyManufacturer(
             @PathVariable Long id, 
-            @Valid @RequestBody ManufacturerVerificationRequest request,
-            @RequestHeader("X-Admin-Id") Long adminId) {
+            @Valid @RequestBody ManufacturerVerificationRequest request) {
         try {
+            // Get admin user ID from JWT token
+            Long adminId = securityUtils.getCurrentUserId();
+            
+            if (adminId == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Admin user ID not found in token"));
+            }
+            
             ManufacturerResponse response = manufacturerService.verifyManufacturer(id, request, adminId);
             return ResponseEntity.ok(response);
         } catch (Exception e) {

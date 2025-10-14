@@ -48,7 +48,7 @@ public class AuthController {
             User user = userService.findByUsername(loginRequest.getUsername())
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            String jwt = jwtUtil.generateToken(loginRequest.getUsername(), user.getRole().name());
+            String jwt = jwtUtil.generateToken(user.getId(), loginRequest.getUsername(), user.getRole().name());
             
             return ResponseEntity.ok(new JwtResponse(jwt, user.getId(), user.getUsername(), 
                     user.getEmail(), user.getFirstName(), user.getLastName(), user.getRole()));
