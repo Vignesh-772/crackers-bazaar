@@ -5,7 +5,11 @@ import com.crackersbazaar.dto.ManufacturerResponse;
 import com.crackersbazaar.dto.ManufacturerVerificationRequest;
 import com.crackersbazaar.entity.Manufacturer;
 import com.crackersbazaar.entity.ManufacturerStatus;
+import com.crackersbazaar.entity.Role;
+import com.crackersbazaar.entity.User;
 import com.crackersbazaar.repository.ManufacturerRepository;
+import com.crackersbazaar.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,40 +29,66 @@ public class ManufacturerService {
     @Autowired
     private ManufacturerRepository manufacturerRepository;
     
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private ManufacturerUserService manufacturerUserService;
+    
     public ManufacturerResponse createManufacturer(ManufacturerRequest request) {
+        // Validate password confirmation
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new RuntimeException("Password and confirm password do not match");
+        }
+        
         // Check if manufacturer with same email already exists
         if (manufacturerRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Manufacturer with email " + request.getEmail() + " already exists");
         }
         
-        Manufacturer manufacturer = new Manufacturer();
-        manufacturer.setCompanyName(request.getCompanyName());
-        manufacturer.setContactPerson(request.getContactPerson());
-        manufacturer.setEmail(request.getEmail());
-        manufacturer.setPhoneNumber(request.getPhoneNumber());
-        manufacturer.setAddress(request.getAddress());
-        manufacturer.setCity(request.getCity());
-        manufacturer.setState(request.getState());
-        manufacturer.setPincode(request.getPincode());
-        manufacturer.setCountry(request.getCountry());
-        manufacturer.setGstNumber(request.getGstNumber());
-        manufacturer.setPanNumber(request.getPanNumber());
-        manufacturer.setLicenseNumber(request.getLicenseNumber());
-        
-        // Parse license validity if provided
-        if (request.getLicenseValidity() != null && !request.getLicenseValidity().isEmpty()) {
-            try {
-                LocalDateTime licenseValidity = LocalDateTime.parse(request.getLicenseValidity());
-                manufacturer.setLicenseValidity(licenseValidity);
-            } catch (Exception e) {
-                throw new RuntimeException("Invalid license validity date format");
-            }
+        // Check if user with same username already exists
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new RuntimeException("Username " + request.getUsername() + " is already taken");
         }
         
+        // Check if user with same email already exists
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("User with email " + request.getEmail() + " already exists");
+        }
+        
+        // Create manufacturer
+        Manufacturer manufacturer = new Manufacturer();
+        setManufacturer(request, manufacturer);
         manufacturer.setStatus(ManufacturerStatus.PENDING);
         manufacturer.setVerified(false);
-        
         Manufacturer savedManufacturer = manufacturerRepository.save(manufacturer);
+        
+        // Create user account for the manufacturer
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        
+        // Extract first and last name from contact person
+        String[] nameParts = request.getContactPerson().split(" ", 2);
+        user.setFirstName(nameParts[0]);
+        user.setLastName(nameParts.length > 1 ? nameParts[1] : "");
+        
+        user.setRole(Role.MANUFACTURER);
+        user.setActive(true);
+        
+        User savedUser = userRepository.save(user);
+        
+        System.out.println("Manufacturer and User account created:");
+        System.out.println("Manufacturer ID: " + savedManufacturer.getId());
+        System.out.println("User ID: " + savedUser.getId());
+        System.out.println("Username: " + savedUser.getUsername());
+        System.out.println("Email: " + savedUser.getEmail());
+        System.out.println("Status: PENDING (awaiting admin approval)");
+        
         return new ManufacturerResponse(savedManufacturer);
     }
     
@@ -129,29 +159,8 @@ public class ManufacturerService {
                 throw new RuntimeException("Manufacturer with email " + request.getEmail() + " already exists");
             }
         }
-        
-        manufacturer.setCompanyName(request.getCompanyName());
-        manufacturer.setContactPerson(request.getContactPerson());
-        manufacturer.setEmail(request.getEmail());
-        manufacturer.setPhoneNumber(request.getPhoneNumber());
-        manufacturer.setAddress(request.getAddress());
-        manufacturer.setCity(request.getCity());
-        manufacturer.setState(request.getState());
-        manufacturer.setPincode(request.getPincode());
-        manufacturer.setCountry(request.getCountry());
-        manufacturer.setGstNumber(request.getGstNumber());
-        manufacturer.setPanNumber(request.getPanNumber());
-        manufacturer.setLicenseNumber(request.getLicenseNumber());
-        
-        // Parse license validity if provided
-        if (request.getLicenseValidity() != null && !request.getLicenseValidity().isEmpty()) {
-            try {
-                LocalDateTime licenseValidity = LocalDateTime.parse(request.getLicenseValidity());
-                manufacturer.setLicenseValidity(licenseValidity);
-            } catch (Exception e) {
-                throw new RuntimeException("Invalid license validity date format");
-            }
-        }
+
+        setManufacturer(request, manufacturer);
         
         Manufacturer savedManufacturer = manufacturerRepository.save(manufacturer);
         return new ManufacturerResponse(savedManufacturer);
@@ -167,13 +176,23 @@ public class ManufacturerService {
         manufacturer.setVerifiedAt(LocalDateTime.now());
         
         // Set verified to true if status is APPROVED or ACTIVE
-        if (request.getStatus() == ManufacturerStatus.APPROVED || request.getStatus() == ManufacturerStatus.ACTIVE) {
-            manufacturer.setVerified(true);
-        } else {
-            manufacturer.setVerified(false);
-        }
+        manufacturer.setVerified(request.getStatus() == ManufacturerStatus.APPROVED || request.getStatus() == ManufacturerStatus.ACTIVE);
         
         Manufacturer savedManufacturer = manufacturerRepository.save(manufacturer);
+        
+        // Update user account status based on manufacturer verification
+        User user = userRepository.findByEmail(manufacturer.getEmail()).orElse(null);
+        if (user != null) {
+            if (request.getStatus() == ManufacturerStatus.APPROVED || request.getStatus() == ManufacturerStatus.ACTIVE) {
+                user.setActive(true);
+                System.out.println("User account activated for approved manufacturer: " + manufacturer.getCompanyName());
+            } else if (request.getStatus() == ManufacturerStatus.REJECTED || request.getStatus() == ManufacturerStatus.SUSPENDED) {
+                user.setActive(false);
+                System.out.println("User account deactivated for manufacturer: " + manufacturer.getCompanyName());
+            }
+            userRepository.save(user);
+        }
+        
         return new ManufacturerResponse(savedManufacturer);
     }
     
@@ -194,5 +213,30 @@ public class ManufacturerService {
     
     public Long getUnverifiedManufacturerCount() {
         return manufacturerRepository.countByVerified(false);
+    }
+
+    private void setManufacturer(ManufacturerRequest request, Manufacturer manufacturer) {
+        manufacturer.setCompanyName(request.getCompanyName());
+        manufacturer.setContactPerson(request.getContactPerson());
+        manufacturer.setEmail(request.getEmail());
+        manufacturer.setPhoneNumber(request.getPhoneNumber());
+        manufacturer.setAddress(request.getAddress());
+        manufacturer.setCity(request.getCity());
+        manufacturer.setState(request.getState());
+        manufacturer.setPincode(request.getPincode());
+        manufacturer.setCountry(request.getCountry());
+        manufacturer.setGstNumber(request.getGstNumber());
+        manufacturer.setPanNumber(request.getPanNumber());
+        manufacturer.setLicenseNumber(request.getLicenseNumber());
+
+        // Parse license validity if provided
+        if (request.getLicenseValidity() != null && !request.getLicenseValidity().isEmpty()) {
+            try {
+                LocalDateTime licenseValidity = LocalDateTime.parse(request.getLicenseValidity());
+                manufacturer.setLicenseValidity(licenseValidity);
+            } catch (Exception e) {
+                throw new RuntimeException("Invalid license validity date format");
+            }
+        }
     }
 }

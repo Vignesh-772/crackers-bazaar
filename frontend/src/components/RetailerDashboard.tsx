@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Role } from '../types/user';
+import ProductList from './ProductList';
 import './RetailerDashboard.css';
 
 const RetailerDashboard: React.FC = () => {
@@ -11,7 +12,7 @@ const RetailerDashboard: React.FC = () => {
     completedOrders: 0,
     totalSpent: 0
   });
-  const [loading, setLoading] = useState(false);
+  const [currentView, setCurrentView] = useState<'dashboard' | 'products'>('dashboard');
 
   useEffect(() => {
     if (user && user.role === Role.RETAILER) {
@@ -20,7 +21,6 @@ const RetailerDashboard: React.FC = () => {
   }, [user]);
 
   const fetchRetailerStats = async () => {
-    setLoading(true);
     try {
       // Mock data for now - replace with actual API calls
       setStats({
@@ -31,8 +31,6 @@ const RetailerDashboard: React.FC = () => {
       });
     } catch (error) {
       console.error('Failed to fetch retailer stats:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -43,6 +41,30 @@ const RetailerDashboard: React.FC = () => {
           <h2>Access Denied</h2>
           <p>This dashboard is only available to retailers.</p>
         </div>
+      </div>
+    );
+  }
+
+  // Render products view
+  if (currentView === 'products') {
+    return (
+      <div className="retailer-dashboard">
+        <div className="dashboard-header">
+          <h1>Browse Products</h1>
+          <div className="header-actions">
+            <button 
+              onClick={() => setCurrentView('dashboard')}
+              className="btn btn-secondary"
+            >
+              ← Back to Dashboard
+            </button>
+          </div>
+        </div>
+        <ProductList
+          showActions={false}
+          autoFetch={true}
+          key="retailer-products"
+        />
       </div>
     );
   }
@@ -92,7 +114,10 @@ const RetailerDashboard: React.FC = () => {
         <div className="content-section">
           <h2>Quick Actions</h2>
           <div className="action-buttons">
-            <button className="btn btn-primary">
+            <button 
+              onClick={() => setCurrentView('products')}
+              className="btn btn-primary"
+            >
               Browse Products
             </button>
             <button className="btn btn-secondary">

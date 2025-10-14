@@ -29,6 +29,8 @@ export interface Manufacturer {
   verifiedAt?: string;
   createdAt: string;
   updatedAt: string;
+  // User credentials
+  username?: string;
 }
 
 export interface ManufacturerRequest {
@@ -45,6 +47,10 @@ export interface ManufacturerRequest {
   panNumber?: string;
   licenseNumber?: string;
   licenseValidity?: string;
+  // User credentials
+  username: string;
+  password: string;
+  confirmPassword: string;
 }
 
 export interface ManufacturerVerificationRequest {

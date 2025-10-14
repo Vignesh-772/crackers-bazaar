@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Manufacturer, ManufacturerStatus } from '../types/manufacturer';
+import { ManufacturerApiService } from '../services/ManufacturerService';
+import ManufacturerCredentials from './ManufacturerCredentials';
 import './ManufacturerVerification.css';
 
 const ManufacturerVerification: React.FC = () => {
@@ -10,9 +12,11 @@ const ManufacturerVerification: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedManufacturer, setSelectedManufacturer] = useState<Manufacturer | null>(null);
   const [verificationData, setVerificationData] = useState({
-    status: ManufacturerStatus.PENDING,
+    status: ManufacturerStatus.APPROVED,
     verificationNotes: ''
   });
+  const [showCredentials, setShowCredentials] = useState(false);
+  const [selectedManufacturerEmail, setSelectedManufacturerEmail] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPendingManufacturers();
@@ -22,21 +26,7 @@ const ManufacturerVerification: React.FC = () => {
     setLoading(true);
     try {
       console.log('Fetching pending manufacturers...');
-      const response = await fetch('http://localhost:8080/api/admin/dashboard/pending-approvals', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      console.log('Pending manufacturers response status:', response.status);
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Error fetching pending manufacturers:', errorData);
-        throw new Error('Failed to fetch pending manufacturers');
-      }
-      
-      const data = await response.json();
+      const data = await ManufacturerApiService.getPendingApprovals();
       console.log('Pending manufacturers data:', data);
       setManufacturers(data);
     } catch (err: any) {
@@ -45,6 +35,16 @@ const ManufacturerVerification: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleShowCredentials = (email: string) => {
+    setSelectedManufacturerEmail(email);
+    setShowCredentials(true);
+  };
+
+  const handleCloseCredentials = () => {
+    setShowCredentials(false);
+    setSelectedManufacturerEmail(null);
   };
 
   const handleVerification = async () => {
@@ -58,36 +58,18 @@ const ManufacturerVerification: React.FC = () => {
     
     setLoading(true);
     try {
-      const requestBody = JSON.stringify(verificationData);
-      console.log('Request body:', requestBody);
-      
-      const response = await fetch(`http://localhost:8080/api/admin/manufacturers/${selectedManufacturer.id}/verify`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'X-Admin-Id': user?.id?.toString() || '1' // Use actual admin ID from logged-in user
-        },
-        body: requestBody
-      });
-
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Error response:', errorData);
-        throw new Error(errorData.error || 'Failed to verify manufacturer');
-      }
-
-      const responseData = await response.json();
+      const responseData = await ManufacturerApiService.verifyManufacturer(
+        selectedManufacturer.id,
+        verificationData,
+        user?.id || 0
+      );
       console.log('Success response:', responseData);
 
       // Refresh the list
       await fetchPendingManufacturers();
       setSelectedManufacturer(null);
       setVerificationData({
-        status: ManufacturerStatus.PENDING,
+        status: ManufacturerStatus.APPROVED,
         verificationNotes: ''
       });
       
@@ -238,6 +220,23 @@ const ManufacturerVerification: React.FC = () => {
                 />
               </div>
 
+              <div className="manufacturer-login-info">
+                <h4>Login Information</h4>
+                <div className="login-details">
+                  <p><strong>Username:</strong> {selectedManufacturer.username || 'Not set'}</p>
+                  <p><strong>Email:</strong> {selectedManufacturer.email}</p>
+                  <p><strong>Status:</strong> 
+                    <span className={`status-badge ${selectedManufacturer.status?.toLowerCase()}`}>
+                      {selectedManufacturer.status}
+                    </span>
+                  </p>
+                  <p className="login-note">
+                    The manufacturer can login using their username and password. 
+                    Their account will be activated/deactivated based on verification status.
+                  </p>
+                </div>
+              </div>
+
               <div className="verification-actions">
                 <button 
                   onClick={handleVerification} 
@@ -245,6 +244,12 @@ const ManufacturerVerification: React.FC = () => {
                   className="btn-primary"
                 >
                   {loading ? 'Processing...' : 'Submit Verification'}
+                </button>
+                <button 
+                  onClick={() => handleShowCredentials(selectedManufacturer.email)}
+                  className="btn-info"
+                >
+                  View Login Credentials
                 </button>
                 <button 
                   onClick={() => setSelectedManufacturer(null)}
@@ -257,6 +262,13 @@ const ManufacturerVerification: React.FC = () => {
           </div>
         )}
       </div>
+      
+      {showCredentials && selectedManufacturerEmail && (
+        <ManufacturerCredentials
+          manufacturerEmail={selectedManufacturerEmail}
+          onClose={handleCloseCredentials}
+        />
+      )}
     </div>
   );
 };

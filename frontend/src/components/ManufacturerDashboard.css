@@ -5,12 +5,22 @@
 }
 
 .dashboard-header {
-  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 30px;
   padding: 20px;
   background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
   color: white;
   border-radius: 10px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
 .dashboard-header h1 {

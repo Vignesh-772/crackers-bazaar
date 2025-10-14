@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ManufacturerRequest } from '../types/manufacturer';
+import { ManufacturerApiService } from '../services/ManufacturerService';
 import './ManufacturerForm.css';
 
 interface ManufacturerFormProps {
@@ -20,7 +21,11 @@ const ManufacturerForm: React.FC<ManufacturerFormProps> = ({ onSuccess }) => {
     gstNumber: '',
     panNumber: '',
     licenseNumber: '',
-    licenseValidity: ''
+    licenseValidity: '',
+    // User credentials
+    username: '',
+    password: '',
+    confirmPassword: ''
   });
 
   const [loading, setLoading] = useState(false);
@@ -35,32 +40,36 @@ const ManufacturerForm: React.FC<ManufacturerFormProps> = ({ onSuccess }) => {
     }));
   };
 
+  const validateForm = () => {
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return false;
+    }
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return false;
+    }
+    if (!formData.username || formData.username.length < 3) {
+      setError('Username must be at least 3 characters long');
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
+    if (!validateForm()) {
+      setLoading(false);
+      return;
+    }
+
     try {
       console.log('Creating manufacturer with data:', formData);
       
-      const response = await fetch('http://localhost:8080/api/admin/manufacturers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(formData)
-      });
-
-      console.log('Create manufacturer response status:', response.status);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Error creating manufacturer:', errorData);
-        throw new Error(errorData.error || 'Failed to create manufacturer');
-      }
-
-      const responseData = await response.json();
+      const responseData = await ManufacturerApiService.createManufacturer(formData);
       console.log('Manufacturer created successfully:', responseData);
 
       setSuccess(true);
@@ -80,7 +89,14 @@ const ManufacturerForm: React.FC<ManufacturerFormProps> = ({ onSuccess }) => {
       <div className="manufacturer-form">
         <div className="success-message">
           <h2>Manufacturer Created Successfully!</h2>
-          <p>The manufacturer has been added to the system and is pending approval.</p>
+          <p>The manufacturer has been added to the system and can now login.</p>
+          <div className="credentials-info">
+            <h3>Login Credentials:</h3>
+            <p><strong>Username:</strong> {formData.username}</p>
+            <p><strong>Email:</strong> {formData.email}</p>
+            <p><strong>Status:</strong> Pending Admin Approval</p>
+            <p className="note">The manufacturer can login but will need admin approval to access all features.</p>
+          </div>
         </div>
       </div>
     );
@@ -224,6 +240,52 @@ const ManufacturerForm: React.FC<ManufacturerFormProps> = ({ onSuccess }) => {
                 placeholder="Enter country"
               />
             </div>
+          </div>
+        </div>
+
+        <div className="form-section">
+          <h3>Login Credentials</h3>
+          
+          <div className="form-group">
+            <label htmlFor="username">Username *</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              required
+              placeholder="Enter username for login"
+              minLength={3}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="password">Password *</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              placeholder="Enter password (min 6 characters)"
+              minLength={6}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="confirmPassword">Confirm Password *</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+              placeholder="Confirm password"
+              minLength={6}
+            />
           </div>
         </div>
 
