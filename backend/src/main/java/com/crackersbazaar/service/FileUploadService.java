@@ -14,7 +14,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class FileUploadService {
@@ -59,7 +58,7 @@ public class FileUploadService {
             // Generate unique filename
             String originalFilename = file.getOriginalFilename();
             String extension = getFileExtension(originalFilename);
-            String filename = UUID.randomUUID().toString() + extension;
+            String filename = java.util.UUID.randomUUID().toString() + extension;
             
             Path filePath = productPath.resolve(filename);
             
@@ -101,7 +100,7 @@ public class FileUploadService {
         // Generate unique filename
         String originalFilename = file.getOriginalFilename();
         String extension = getFileExtension(originalFilename);
-        String filename = UUID.randomUUID().toString() + extension;
+        String filename = java.util.UUID.randomUUID().toString() + extension;
         
         Path filePath = productPath.resolve(filename);
         
@@ -124,7 +123,7 @@ public class FileUploadService {
         return "/uploads/products/" + productId + "/" + filename;
     }
     
-    public void deleteProductImages(Long productId) throws IOException {
+    public void deleteProductImages(String productId) throws IOException {
         String productDir = uploadDir + "/products/" + productId;
         Path productPath = Paths.get(productDir);
         
@@ -274,7 +273,7 @@ public class FileUploadService {
         // Generate unique filename
         String originalFilename = file.getOriginalFilename();
         String extension = getFileExtension(originalFilename);
-        String filename = UUID.randomUUID().toString() + extension;
+        String filename = java.util.UUID.randomUUID().toString() + extension;
         
         Path filePath = tempPath.resolve(filename);
         

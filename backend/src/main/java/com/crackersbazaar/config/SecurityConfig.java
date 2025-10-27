@@ -47,6 +47,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/health").permitAll()
+                .requestMatchers("/api/products/**").permitAll()
+                .requestMatchers("/api/upload/image/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/api/users/**").authenticated()
                 .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "DASHBOARD_ADMIN")

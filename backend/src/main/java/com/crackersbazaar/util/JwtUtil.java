@@ -29,8 +29,8 @@ public class JwtUtil {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public Long extractUserId(String token) {
-        return extractClaim(token, claims -> claims.get("userId", Long.class));
+    public String extractUserId(String token) {
+        return extractClaim(token, claims -> claims.get("userId", String.class));
     }
 
     public Date extractExpiration(String token) {
@@ -65,7 +65,7 @@ public class JwtUtil {
         return createToken(claims, username);
     }
 
-    public String generateToken(Long userId, String username, String role) {
+    public String generateToken(String userId, String username, String role) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("role", role);
@@ -106,7 +106,7 @@ public class JwtUtil {
     /**
      * Extract user ID from JWT token in Authorization header
      */
-    public Long extractUserIdFromHeader(String authorizationHeader) {
+    public String extractUserIdFromHeader(String authorizationHeader) {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             String token = authorizationHeader.substring(7);
             return extractUserId(token);

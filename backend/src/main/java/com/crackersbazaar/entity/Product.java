@@ -14,8 +14,8 @@ import java.util.List;
 public class Product {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(columnDefinition = "VARCHAR(36)")
+    private String id;
     
     @NotBlank
     @Size(max = 200)
@@ -121,11 +121,11 @@ public class Product {
     }
     
     // Getters and Setters
-    public Long getId() {
+    public String getId() {
         return id;
     }
     
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
     

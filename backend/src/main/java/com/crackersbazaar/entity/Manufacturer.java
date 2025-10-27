@@ -15,8 +15,8 @@ import java.time.LocalDateTime;
 public class Manufacturer {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(columnDefinition = "VARCHAR(36)")
+    private String id;
     
     @NotBlank
     @Size(max = 100)
@@ -93,8 +93,8 @@ public class Manufacturer {
     @Column(name = "verification_notes", length = 1000)
     private String verificationNotes;
     
-    @Column(name = "verified_by")
-    private Long verifiedBy;
+    @Column(name = "verified_by", columnDefinition = "VARCHAR(36)")
+    private String verifiedBy;
     
     @Column(name = "verified_at")
     private LocalDateTime verifiedAt;
@@ -124,11 +124,11 @@ public class Manufacturer {
     }
     
     // Getters and Setters
-    public Long getId() {
+    public String getId() {
         return id;
     }
     
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
     
@@ -260,11 +260,11 @@ public class Manufacturer {
         this.verificationNotes = verificationNotes;
     }
     
-    public Long getVerifiedBy() {
+    public String getVerifiedBy() {
         return verifiedBy;
     }
     
-    public void setVerifiedBy(Long verifiedBy) {
+    public void setVerifiedBy(String verifiedBy) {
         this.verifiedBy = verifiedBy;
     }
     

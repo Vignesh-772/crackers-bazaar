@@ -23,7 +23,7 @@ public class SecurityUtils {
     /**
      * Get the current authenticated user's ID from JWT token
      */
-    public Long getCurrentUserId() {
+    public String getCurrentUserId() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (attributes != null) {
             HttpServletRequest request = attributes.getRequest();
@@ -77,8 +77,8 @@ public class SecurityUtils {
      * Get the current manufacturer ID for the authenticated manufacturer user
      * This is a convenience method that combines getCurrentUserId() and manufacturer lookup
      */
-    public Long getCurrentManufacturerId() {
-        Long userId = getCurrentUserId();
+    public String getCurrentManufacturerId() {
+        String userId = getCurrentUserId();
         if (userId == null) {
             return null;
         }
@@ -92,7 +92,7 @@ public class SecurityUtils {
      * Get the current manufacturer for the authenticated manufacturer user
      */
     public Manufacturer getCurrentManufacturer() {
-        Long userId = getCurrentUserId();
+        String userId = getCurrentUserId();
         if (userId == null) {
             return null;
         }

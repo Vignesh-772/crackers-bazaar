@@ -62,7 +62,7 @@ const AdminDashboard = () => {
 
   // Verify manufacturer mutation
   const verifyMutation = useMutation({
-    mutationFn: ({ id, status }: { id: number; status: ManufacturerStatus }) =>
+    mutationFn: ({ id, status }: { id: string; status: ManufacturerStatus }) =>
       manufacturerApi.verifyManufacturer(id, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["manufacturers"] });
@@ -74,7 +74,7 @@ const AdminDashboard = () => {
     },
   });
 
-  const handleVerify = (id: number, status: ManufacturerStatus) => {
+  const handleVerify = (id: string, status: ManufacturerStatus) => {
     verifyMutation.mutate({ id, status });
   };
 

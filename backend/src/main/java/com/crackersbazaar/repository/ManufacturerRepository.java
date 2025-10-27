@@ -14,13 +14,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ManufacturerRepository extends JpaRepository<Manufacturer, Long> {
+public interface ManufacturerRepository extends JpaRepository<Manufacturer, String> {
     
     Optional<Manufacturer> findByEmail(String email);
     
     Optional<Manufacturer> findByUser(User user);
     
-    Optional<Manufacturer> findByUserId(Long userId);
+    Optional<Manufacturer> findByUserId(String userId);
     
     List<Manufacturer> findByStatus(ManufacturerStatus status);
     

@@ -62,7 +62,7 @@ this.userId = manufacturer.getUser() != null ? manufacturer.getUser().getId() : 
 #### 1. **Manufacturer Type** (Updated)
 ```typescript
 export interface Manufacturer {
-  id: number;
+  id: string;
   userId?: number;  // ✨ NEW - Foreign key reference
   companyName: string;
   contactPerson: string;  // Updated from split fields

@@ -10,6 +10,10 @@ import type {
   ManufacturerRequest,
   ManufacturerVerificationRequest,
   DashboardStats,
+  Order,
+  OrderRequest,
+  OrderStatusUpdateRequest,
+  OrderStats,
   ApiError,
 } from "@/types";
 
@@ -67,6 +71,31 @@ export const authApi = {
     const response = await apiClient.post<{ message: string }>("/auth/logout");
     return response.data;
   },
+
+  validateToken: async (): Promise<{
+    valid: boolean;
+    userId?: string;
+    username?: string;
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    role?: string;
+    isActive?: boolean;
+    message?: string;
+  }> => {
+    const response = await apiClient.get<{
+      valid: boolean;
+      userId?: string;
+      username?: string;
+      email?: string;
+      firstName?: string;
+      lastName?: string;
+      role?: string;
+      isActive?: boolean;
+      message?: string;
+    }>("/auth/validate");
+    return response.data;
+  },
 };
 
 // Product APIs
@@ -81,7 +110,7 @@ export const productApi = {
     return response.data;
   },
 
-  getProductById: async (id: number): Promise<Product> => {
+  getProductById: async (id: string): Promise<Product> => {
     const response = await apiClient.get<Product>(`/products/${id}`);
     return response.data;
   },
@@ -114,27 +143,27 @@ export const productApi = {
     return response.data;
   },
 
-  updateProduct: async (id: number, data: ProductRequest): Promise<Product> => {
+  updateProduct: async (id: string, data: ProductRequest): Promise<Product> => {
     const response = await apiClient.put<Product>(`/products/${id}`, data);
     return response.data;
   },
 
-  deleteProduct: async (id: number): Promise<{ message: string }> => {
+  deleteProduct: async (id: string): Promise<{ message: string }> => {
     const response = await apiClient.delete<{ message: string }>(`/products/${id}`);
     return response.data;
   },
 
-  toggleProductStatus: async (id: number): Promise<Product> => {
+  toggleProductStatus: async (id: string): Promise<Product> => {
     const response = await apiClient.put<Product>(`/products/${id}/toggle-status`);
     return response.data;
   },
 
-  toggleFeaturedStatus: async (id: number): Promise<Product> => {
+  toggleFeaturedStatus: async (id: string): Promise<Product> => {
     const response = await apiClient.put<Product>(`/products/${id}/toggle-featured`);
     return response.data;
   },
 
-  updateStock: async (id: number, stockQuantity: number): Promise<Product> => {
+  updateStock: async (id: string, stockQuantity: number): Promise<Product> => {
     const response = await apiClient.put<Product>(`/products/${id}/stock`, null, {
       params: { stockQuantity },
     });
@@ -173,6 +202,25 @@ export const productApi = {
     });
     return response.data;
   },
+
+  // Comprehensive search
+  searchProductsAdvanced: async (params: {
+    query?: string;
+    category?: string;
+    subcategory?: string;
+    brand?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDir?: string;
+  }): Promise<PaginatedResponse<Product>> => {
+    const response = await apiClient.get<PaginatedResponse<Product>>("/products/search", {
+      params,
+    });
+    return response.data;
+  },
 };
 
 // Manufacturer APIs (Admin)
@@ -189,7 +237,7 @@ export const manufacturerApi = {
     return response.data;
   },
 
-  getManufacturerById: async (id: number): Promise<Manufacturer> => {
+  getManufacturerById: async (id: string): Promise<Manufacturer> => {
     const response = await apiClient.get<Manufacturer>(`/admin/manufacturers/${id}`);
     return response.data;
   },
@@ -211,18 +259,18 @@ export const manufacturerApi = {
     return response.data;
   },
 
-  updateManufacturer: async (id: number, data: ManufacturerRequest): Promise<Manufacturer> => {
+  updateManufacturer: async (id: string, data: ManufacturerRequest): Promise<Manufacturer> => {
     const response = await apiClient.put<Manufacturer>(`/admin/manufacturers/${id}`, data);
     return response.data;
   },
 
-  deleteManufacturer: async (id: number): Promise<{ message: string }> => {
+  deleteManufacturer: async (id: string): Promise<{ message: string }> => {
     const response = await apiClient.delete<{ message: string }>(`/admin/manufacturers/${id}`);
     return response.data;
   },
 
   verifyManufacturer: async (
-    id: number,
+    id: string,
     data: ManufacturerVerificationRequest
   ): Promise<Manufacturer> => {
     const response = await apiClient.put<Manufacturer>(`/admin/manufacturers/${id}/verify`, data);
@@ -280,13 +328,13 @@ export const uploadApi = {
 
   uploadProductImages: async (
     files: File[],
-    productId: number
+    productId: string
   ): Promise<{ urls: string[]; count: number }> => {
     const formData = new FormData();
     files.forEach((file) => {
       formData.append("files", file);
     });
-    formData.append("productId", productId.toString());
+    formData.append("productId", productId);
 
     const response = await apiClient.post<{
       message: string;
@@ -300,10 +348,10 @@ export const uploadApi = {
     return response.data;
   },
 
-  uploadSingleImage: async (file: File, productId: number): Promise<{ url: string }> => {
+  uploadSingleImage: async (file: File, productId: string): Promise<{ url: string }> => {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("productId", productId.toString());
+    formData.append("productId", productId);
 
     const response = await apiClient.post<{
       message: string;
@@ -320,6 +368,137 @@ export const uploadApi = {
     const response = await apiClient.delete<{ message: string }>("/upload/image", {
       params: { imageUrl },
     });
+    return response.data;
+  },
+};
+
+// Order APIs
+export const orderApi = {
+  createOrder: async (data: OrderRequest): Promise<Order> => {
+    const response = await apiClient.post<Order>("/orders", data);
+    return response.data;
+  },
+
+  getOrderById: async (id: string): Promise<Order> => {
+    const response = await apiClient.get<Order>(`/orders/${id}`);
+    return response.data;
+  },
+
+  getOrderByOrderNumber: async (orderNumber: string): Promise<Order> => {
+    const response = await apiClient.get<Order>(`/orders/number/${orderNumber}`);
+    return response.data;
+  },
+
+  getAllOrders: async (params?: {
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDir?: string;
+  }): Promise<PaginatedResponse<Order>> => {
+    const response = await apiClient.get<PaginatedResponse<Order>>("/orders", { params });
+    return response.data;
+  },
+
+  getMyOrders: async (params?: {
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDir?: string;
+  }): Promise<PaginatedResponse<Order>> => {
+    const response = await apiClient.get<PaginatedResponse<Order>>("/orders/my-orders", { params });
+    return response.data;
+  },
+
+  getOrdersByUserId: async (params: {
+    userId: number;
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDir?: string;
+  }): Promise<PaginatedResponse<Order>> => {
+    const { userId, ...queryParams } = params;
+    const response = await apiClient.get<PaginatedResponse<Order>>(`/orders/user/${userId}`, {
+      params: queryParams,
+    });
+    return response.data;
+  },
+
+  getOrdersByStatus: async (params: {
+    status: string;
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDir?: string;
+  }): Promise<PaginatedResponse<Order>> => {
+    const { status, ...queryParams } = params;
+    const response = await apiClient.get<PaginatedResponse<Order>>(`/orders/status/${status}`, {
+      params: queryParams,
+    });
+    return response.data;
+  },
+
+  getManufacturerOrders: async (params?: {
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDir?: string;
+  }): Promise<PaginatedResponse<Order>> => {
+    const response = await apiClient.get<PaginatedResponse<Order>>(
+      "/orders/manufacturer/my-orders",
+      { params }
+    );
+    return response.data;
+  },
+
+  getOrdersByManufacturerId: async (params: {
+    manufacturerId: number;
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDir?: string;
+  }): Promise<PaginatedResponse<Order>> => {
+    const { manufacturerId, ...queryParams } = params;
+    const response = await apiClient.get<PaginatedResponse<Order>>(
+      `/orders/manufacturer/${manufacturerId}`,
+      { params: queryParams }
+    );
+    return response.data;
+  },
+
+  updateOrderStatus: async (
+    id: string,
+    data: OrderStatusUpdateRequest
+  ): Promise<Order> => {
+    const response = await apiClient.put<Order>(`/orders/${id}/status`, data);
+    return response.data;
+  },
+
+  cancelOrder: async (id: string, reason?: string): Promise<Order> => {
+    const response = await apiClient.put<Order>(`/orders/${id}/cancel`, null, {
+      params: { reason },
+    });
+    return response.data;
+  },
+
+  deleteOrder: async (id: string): Promise<{ message: string }> => {
+    const response = await apiClient.delete<{ message: string }>(`/orders/${id}`);
+    return response.data;
+  },
+
+  getUserOrderStats: async (): Promise<OrderStats> => {
+    const response = await apiClient.get<OrderStats>("/orders/stats/user");
+    return response.data;
+  },
+
+  getManufacturerOrderStats: async (): Promise<OrderStats> => {
+    const response = await apiClient.get<OrderStats>("/orders/stats/manufacturer");
+    return response.data;
+  },
+
+  getOrderCountByStatus: async (status: string): Promise<{ status: string; count: number }> => {
+    const response = await apiClient.get<{ status: string; count: number }>(
+      `/orders/stats/status/${status}`
+    );
     return response.data;
   },
 };

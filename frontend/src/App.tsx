@@ -4,12 +4,16 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { CartProvider } from "@/contexts/CartContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import AuthGuard from "@/components/AuthGuard";
 import { Role } from "@/types";
 import Index from "./pages/Index";
 import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
+import Orders from "./pages/Orders";
+import OrderDetail from "./pages/OrderDetail";
 import Auth from "./pages/Auth";
 import AdminDashboard from "./pages/AdminDashboard";
 import ManufacturerDashboard from "./pages/ManufacturerDashboard";
@@ -32,7 +36,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
+          <CartProvider>
+            <AuthGuard>
+              <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/products" element={<Products />} />
             <Route path="/product/:id" element={<ProductDetail />} />
@@ -44,6 +50,22 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRoles={[Role.RETAILER]}>
                   <Cart />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/orders"
+              element={
+                <ProtectedRoute allowedRoles={[Role.RETAILER, Role.ADMIN, Role.DASHBOARD_ADMIN]}>
+                  <Orders />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/orders/:id"
+              element={
+                <ProtectedRoute allowedRoles={[Role.RETAILER, Role.ADMIN, Role.DASHBOARD_ADMIN]}>
+                  <OrderDetail />
                 </ProtectedRoute>
               }
             />
@@ -66,7 +88,7 @@ const App = () => (
             <Route
               path="/dashboard"
               element={
-                <ProtectedRoute allowedRoles={[Role.RETAILER]}>
+                <ProtectedRoute allowedRoles={[Role.ADMIN, Role.DASHBOARD_ADMIN, Role.MANUFACTURER]}>
                   <UserDashboard />
                 </ProtectedRoute>
               }
@@ -74,7 +96,9 @@ const App = () => (
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
-          </Routes>
+              </Routes>
+            </AuthGuard>
+          </CartProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

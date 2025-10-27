@@ -72,7 +72,7 @@ public class ImageProxyController {
      */
     @GetMapping("/products/{productId}/{filename}")
     public ResponseEntity<byte[]> getProductImage(
-            @PathVariable Long productId,
+            @PathVariable String productId,
             @PathVariable String filename) {
         try {
             String s3Key = "products/" + productId + "/" + filename;

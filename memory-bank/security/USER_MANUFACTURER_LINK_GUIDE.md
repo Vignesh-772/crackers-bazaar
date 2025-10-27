@@ -105,7 +105,7 @@ ManufacturerResponse getManufacturerByUserEmail(String email)
 #### Updated Types
 ```typescript
 export interface Manufacturer {
-  id: number;
+  id: string;
   userId?: number;  // 🆕 Added
   companyName: string;
   contactPerson: string;  // 🆕 Updated from separate field

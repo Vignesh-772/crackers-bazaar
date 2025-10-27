@@ -4,18 +4,52 @@
 
 All project documentation has been organized into logical categories for easy navigation and maintenance.
 
+### 📋 **Recent Updates**
+- **UUID Migration Documentation** - Complete guide moved to `features/UUID_MIGRATION_SUMMARY.md`
+- **Database Fix Documentation** - All database-related fixes moved to `features/` directory
+- **Image Storage Solutions** - Image loading solutions moved to `storage/` directory
+- **Test Data Documentation** - Test data and credentials moved to `setup/` directory
+- **Comprehensive Index** - New `DOCUMENTATION_INDEX.md` provides complete navigation guide
+
 ## 📁 Directory Structure
 
 ```
 memory-bank/
 ├── README.md                    # This index file
+├── DOCUMENTATION_INDEX.md      # Comprehensive documentation index
 ├── setup/                       # Setup & Installation Guides
 │   ├── QUICK_START.md
 │   ├── DOCKER_SETUP.md
 │   ├── README_DOCKER.md
 │   ├── POSTMAN_COLLECTION_README.md
 │   ├── README.md
-│   └── frontend-README.md
+│   ├── TEST_DATA_README.md      # Test data documentation
+│   └── test-login-credentials.md # Login credentials
+├── features/                     # Feature Implementation Guides
+│   ├── UUID_MIGRATION_SUMMARY.md # UUID migration complete guide
+│   ├── DATA_INITIALIZER_CONFLICT_FIX.md # DataInitializer conflict resolution
+│   ├── DUPLICATE_KEY_FIX.md     # Duplicate key constraint fixes
+│   ├── JPA_DEPENDENCY_FIX.md    # JPA dependency error resolution
+│   ├── DATA_SQL_FIXES.md        # Database schema fixes
+│   ├── MANUFACTURER_ORDER_MANAGEMENT.md
+│   ├── ORDER_MANAGEMENT_SEARCH_IMPLEMENTATION.md
+│   ├── CART_FUNCTIONALITY_IMPLEMENTATION.md
+│   ├── ADD_PRODUCT_GUIDE.md
+│   ├── ADD_MANUFACTURER_GUIDE.md
+│   ├── UPDATE_DELETE_MANUFACTURER.md
+│   ├── DELETE_MANUFACTURER_GUIDE.md
+│   ├── COMPLETE_FEATURE_LIST.md
+│   └── ADD_FEATURES_COMPLETE.md
+├── storage/                      # Storage & Image Management
+│   ├── IMAGE_LOADING_SOLUTION.md # Image loading solutions
+│   ├── S3_IMAGE_STORAGE_GUIDE.md
+│   ├── S3_SETUP_QUICKSTART.md
+│   ├── IMAGE_UPLOAD_IMPLEMENTATION_SUMMARY.md
+│   ├── IMAGE_UPLOAD_COMPRESSION_GUIDE.md
+│   ├── S3_IMPLEMENTATION_COMPLETE.md
+│   ├── STORAGE_OPTIONS_COMPLETE.md
+│   ├── LOCALSTACK_S3_GUIDE.md
+│   └── LOCALSTACK_QUICKSTART.md
 ├── integration/                 # Frontend-Backend Integration
 │   ├── FRONTEND_BACKEND_INTEGRATION.md
 │   └── COMPLETE_INTEGRATION_SUMMARY.md

@@ -9,7 +9,7 @@ import java.util.List;
 
 public class ProductResponse {
     
-    private Long id;
+    private String id;
     private String name;
     private String description;
     private BigDecimal price;
@@ -32,7 +32,7 @@ public class ProductResponse {
     private String warrantyPeriod;
     private String returnPolicy;
     private String shippingInfo;
-    private Long manufacturerId;
+    private String manufacturerId;
     private String manufacturerName;
     private String manufacturerEmail;
     private List<String> imageUrls;
@@ -79,11 +79,11 @@ public class ProductResponse {
     }
     
     // Getters and Setters
-    public Long getId() {
+    public String getId() {
         return id;
     }
     
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
     
@@ -263,11 +263,11 @@ public class ProductResponse {
         this.shippingInfo = shippingInfo;
     }
     
-    public Long getManufacturerId() {
+    public String getManufacturerId() {
         return manufacturerId;
     }
-    
-    public void setManufacturerId(Long manufacturerId) {
+
+    public void setManufacturerId(String manufacturerId) {
         this.manufacturerId = manufacturerId;
     }
     

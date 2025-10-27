@@ -132,7 +132,7 @@ public class FileUploadController {
     
     @DeleteMapping("/product-images/{productId}")
     @PreAuthorize("hasRole('MANUFACTURER')")
-    public ResponseEntity<?> deleteProductImages(@PathVariable Long productId) {
+    public ResponseEntity<?> deleteProductImages(@PathVariable String productId) {
         try {
             fileUploadService.deleteProductImages(productId);
             return ResponseEntity.ok(Map.of("message", "Product images deleted successfully"));

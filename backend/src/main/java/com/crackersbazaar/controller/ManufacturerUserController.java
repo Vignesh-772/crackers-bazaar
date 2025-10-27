@@ -23,7 +23,7 @@ public class ManufacturerUserController {
      */
     @PostMapping("/create/{manufacturerId}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('DASHBOARD_ADMIN')")
-    public ResponseEntity<?> createManufacturerUser(@PathVariable Long manufacturerId) {
+    public ResponseEntity<?> createManufacturerUser(@PathVariable String manufacturerId) {
         try {
             // This would need to be implemented to get manufacturer by ID
             // For now, we'll use email-based approach

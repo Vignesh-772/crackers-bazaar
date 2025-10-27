@@ -16,7 +16,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class S3StorageService {
@@ -58,7 +57,7 @@ public class S3StorageService {
         // Generate unique filename
         String originalFilename = file.getOriginalFilename();
         String extension = getFileExtension(originalFilename);
-        String filename = UUID.randomUUID().toString() + extension;
+        String filename = java.util.UUID.randomUUID().toString() + extension;
         String s3Key = folder + "/" + filename;
 
         // Get original size

@@ -95,7 +95,7 @@ public class ManufacturerService {
         return new ManufacturerResponse(savedManufacturer);
     }
     
-    public ManufacturerResponse getManufacturerById(Long id) {
+    public ManufacturerResponse getManufacturerById(String id) {
         Manufacturer manufacturer = manufacturerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Manufacturer not found with id: " + id));
         return new ManufacturerResponse(manufacturer);
@@ -152,7 +152,7 @@ public class ManufacturerService {
                 .collect(Collectors.toList());
     }
     
-    public ManufacturerResponse updateManufacturer(Long id, ManufacturerRequest request) {
+    public ManufacturerResponse updateManufacturer(String id, ManufacturerRequest request) {
         Manufacturer manufacturer = manufacturerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Manufacturer not found with id: " + id));
         
@@ -169,7 +169,7 @@ public class ManufacturerService {
         return new ManufacturerResponse(savedManufacturer);
     }
     
-    public ManufacturerResponse verifyManufacturer(Long id, ManufacturerVerificationRequest request, Long adminId) {
+    public ManufacturerResponse verifyManufacturer(String id, ManufacturerVerificationRequest request, String adminId) {
         Manufacturer manufacturer = manufacturerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Manufacturer not found with id: " + id));
         
@@ -199,7 +199,7 @@ public class ManufacturerService {
         return new ManufacturerResponse(savedManufacturer);
     }
     
-    public void deleteManufacturer(Long id) {
+    public void deleteManufacturer(String id) {
         Manufacturer manufacturer = manufacturerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Manufacturer not found with id: " + id));
         
@@ -227,7 +227,7 @@ public class ManufacturerService {
         return manufacturerRepository.countByVerified(false);
     }
     
-    public ManufacturerResponse getManufacturerByUserId(Long userId) {
+    public ManufacturerResponse getManufacturerByUserId(String userId) {
         Manufacturer manufacturer = manufacturerRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Manufacturer not found for user id: " + userId));
         return new ManufacturerResponse(manufacturer);

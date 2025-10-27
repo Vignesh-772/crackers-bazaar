@@ -66,7 +66,7 @@ public class AdminController {
     
     @GetMapping("/manufacturers/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('DASHBOARD_ADMIN')")
-    public ResponseEntity<?> getManufacturerById(@PathVariable Long id) {
+    public ResponseEntity<?> getManufacturerById(@PathVariable String id) {
         try {
             ManufacturerResponse response = manufacturerService.getManufacturerById(id);
             return ResponseEntity.ok(response);
@@ -142,7 +142,7 @@ public class AdminController {
     
     @PutMapping("/manufacturers/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('DASHBOARD_ADMIN')")
-    public ResponseEntity<?> updateManufacturer(@PathVariable Long id, @Valid @RequestBody ManufacturerRequest request) {
+    public ResponseEntity<?> updateManufacturer(@PathVariable String id, @Valid @RequestBody ManufacturerRequest request) {
         try {
             ManufacturerResponse response = manufacturerService.updateManufacturer(id, request);
             return ResponseEntity.ok(response);
@@ -154,11 +154,11 @@ public class AdminController {
     @PutMapping("/manufacturers/{id}/verify")
     @PreAuthorize("hasRole('ADMIN') or hasRole('DASHBOARD_ADMIN')")
     public ResponseEntity<?> verifyManufacturer(
-            @PathVariable Long id, 
+            @PathVariable String id, 
             @Valid @RequestBody ManufacturerVerificationRequest request) {
         try {
             // Get admin user ID from JWT token
-            Long adminId = securityUtils.getCurrentUserId();
+            String adminId = securityUtils.getCurrentUserId();
             
             if (adminId == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Admin user ID not found in token"));
@@ -173,7 +173,7 @@ public class AdminController {
     
     @DeleteMapping("/manufacturers/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('DASHBOARD_ADMIN')")
-    public ResponseEntity<?> deleteManufacturer(@PathVariable Long id) {
+    public ResponseEntity<?> deleteManufacturer(@PathVariable String id) {
         try {
             manufacturerService.deleteManufacturer(id);
             return ResponseEntity.ok(Map.of("message", "Manufacturer deleted successfully"));

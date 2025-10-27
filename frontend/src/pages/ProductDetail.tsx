@@ -1,23 +1,34 @@
-import { useParams, Link } from "react-router-dom";
+import { useState } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ShoppingCart, ArrowLeft, Star, Package } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ShoppingCart, ArrowLeft, Star, Package, Plus, Minus } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import LoginRequiredDialog from "@/components/LoginRequiredDialog";
 import { productApi } from "@/lib/api";
+import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const { addToCart, getItemQuantity, updateQuantity } = useCart();
+  const [quantity, setQuantity] = useState(1);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
 
   // Fetch product data
   const { data: product, isLoading, error } = useQuery({
     queryKey: ["product", id],
     queryFn: async () => {
       if (!id) throw new Error("Product ID is required");
-      return await productApi.getProductById(parseInt(id));
+      return await productApi.getProductById(id);
     },
     enabled: !!id,
   });
@@ -75,6 +86,43 @@ const ProductDetail = () => {
 
   const rating = 4.5; // Placeholder - would come from reviews system
   const reviews = 128; // Placeholder - would come from reviews system
+
+  // Cart functions
+  const handleAddToCart = () => {
+    if (!product) return;
+    
+    addToCart(product, quantity);
+    
+    if (!isAuthenticated) {
+      toast.info("Item added to cart! Login to checkout and sync your cart to your account.");
+    } else {
+      toast.success("Item added to cart!");
+    }
+  };
+
+  const handleBuyNow = () => {
+    if (!isAuthenticated) {
+      setShowLoginDialog(true);
+      return;
+    }
+    
+    if (!product) return;
+    
+    // Add to cart first, then navigate to cart
+    addToCart(product, quantity);
+    navigate("/cart");
+  };
+
+  const handleQuantityChange = (newQuantity: number) => {
+    if (newQuantity < 1) return;
+    if (product && product.maxOrderQuantity && newQuantity > product.maxOrderQuantity) {
+      toast.error(`Maximum order quantity is ${product.maxOrderQuantity}`);
+      return;
+    }
+    setQuantity(newQuantity);
+  };
+
+  const currentCartQuantity = product ? getItemQuantity(product.id) : 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -185,16 +233,63 @@ const ProductDetail = () => {
               </CardContent>
             </Card>
 
+            {/* Quantity Selector */}
+            <div className="space-y-2">
+              <Label htmlFor="quantity">Quantity</Label>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleQuantityChange(quantity - 1)}
+                  disabled={quantity <= 1}
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+                <Input
+                  id="quantity"
+                  type="number"
+                  value={quantity}
+                  onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
+                  className="w-20 text-center"
+                  min={1}
+                  max={product?.maxOrderQuantity || product?.stockQuantity || 999}
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleQuantityChange(quantity + 1)}
+                  disabled={
+                    quantity >= (product?.stockQuantity || 0) ||
+                    (product?.maxOrderQuantity && quantity >= product.maxOrderQuantity)
+                  }
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              {currentCartQuantity > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  {currentCartQuantity} in cart
+                </p>
+              )}
+            </div>
+
             <div className="flex gap-4">
               <Button
                 size="lg"
                 className="flex-1"
                 disabled={!inStock}
+                onClick={handleAddToCart}
               >
                 <ShoppingCart className="mr-2 h-5 w-5" />
                 Add to Cart
               </Button>
-              <Button size="lg" variant="outline" className="flex-1" disabled={!inStock}>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="flex-1" 
+                disabled={!inStock}
+                onClick={handleBuyNow}
+              >
                 Buy Now
               </Button>
             </div>
@@ -207,6 +302,20 @@ const ProductDetail = () => {
           </div>
         </div>
       </div>
+      
+      <LoginRequiredDialog
+        open={showLoginDialog}
+        onOpenChange={setShowLoginDialog}
+        title="Login Required to Buy Now"
+        description="You need to be logged in to place an order. Please login to continue with your purchase."
+        onLoginSuccess={() => {
+          // Add to cart and navigate to cart after login
+          if (product) {
+            addToCart(product, quantity);
+            navigate("/cart");
+          }
+        }}
+      />
     </div>
   );
 };

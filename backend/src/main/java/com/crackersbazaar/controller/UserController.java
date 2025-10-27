@@ -145,7 +145,7 @@ public class UserController {
 
     @PutMapping("/{id}/activate")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> activateUser(@PathVariable Long id) {
+    public ResponseEntity<?> activateUser(@PathVariable String id) {
         try {
             userService.activateUser(id);
             Map<String, String> response = new HashMap<>();
@@ -160,7 +160,7 @@ public class UserController {
 
     @PutMapping("/{id}/deactivate")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deactivateUser(@PathVariable Long id) {
+    public ResponseEntity<?> deactivateUser(@PathVariable String id) {
         try {
             userService.deactivateUser(id);
             Map<String, String> response = new HashMap<>();

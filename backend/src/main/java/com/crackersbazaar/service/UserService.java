@@ -62,7 +62,7 @@ public class UserService {
         return userRepository.findByRoleAndActiveTrue(role);
     }
 
-    public User updateUser(Long id, User userDetails) {
+    public User updateUser(String id, User userDetails) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
@@ -78,7 +78,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public User updateUserRole(Long id, Role role) {
+    public User updateUserRole(String id, Role role) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
@@ -86,11 +86,11 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public void deleteUser(Long id) {
+    public void deleteUser(String id) {
         userRepository.deleteById(id);
     }
 
-    public void deactivateUser(Long id) {
+    public void deactivateUser(String id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
@@ -98,7 +98,7 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public void activateUser(Long id) {
+    public void activateUser(String id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 

@@ -42,7 +42,7 @@ public class ProductController {
     public ResponseEntity<?> createProduct(@Valid @RequestBody ProductRequest request) {
         try {
             // Get manufacturer ID directly from JWT token (via user ID and FK relationship)
-            Long manufacturerId = securityUtils.getCurrentManufacturerId();
+            String manufacturerId = securityUtils.getCurrentManufacturerId();
             
             if (manufacturerId == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Manufacturer profile not found. Please contact admin."));
@@ -56,7 +56,7 @@ public class ProductController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<?> getProductById(@PathVariable Long id) {
+    public ResponseEntity<?> getProductById(@PathVariable String id) {
         try {
             ProductResponse response = productService.getProductById(id);
             return ResponseEntity.ok(response);
@@ -105,7 +105,7 @@ public class ProductController {
     
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('MANUFACTURER')")
-    public ResponseEntity<?> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request) {
+    public ResponseEntity<?> updateProduct(@PathVariable String id, @Valid @RequestBody ProductRequest request) {
         try {
             ProductResponse response = productService.updateProduct(id, request);
             return ResponseEntity.ok(response);
@@ -116,7 +116,7 @@ public class ProductController {
     
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('MANUFACTURER')")
-    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<?> deleteProduct(@PathVariable String id) {
         try {
             productService.deleteProduct(id);
             return ResponseEntity.ok(Map.of("message", "Product deleted successfully"));
@@ -129,7 +129,7 @@ public class ProductController {
     
     @GetMapping("/manufacturer/{manufacturerId}")
     public ResponseEntity<?> getProductsByManufacturer(
-            @PathVariable Long manufacturerId,
+            @PathVariable String manufacturerId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -148,7 +148,7 @@ public class ProductController {
     
     @GetMapping("/manufacturer/{manufacturerId}/active")
     public ResponseEntity<?> getActiveProductsByManufacturer(
-            @PathVariable Long manufacturerId,
+            @PathVariable String manufacturerId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -349,7 +349,7 @@ public class ProductController {
     
     @PutMapping("/{id}/toggle-status")
     @PreAuthorize("hasRole('MANUFACTURER')")
-    public ResponseEntity<?> toggleProductStatus(@PathVariable Long id) {
+    public ResponseEntity<?> toggleProductStatus(@PathVariable String id) {
         try {
             ProductResponse response = productService.toggleProductStatus(id);
             return ResponseEntity.ok(response);
@@ -360,7 +360,7 @@ public class ProductController {
     
     @PutMapping("/{id}/toggle-featured")
     @PreAuthorize("hasRole('MANUFACTURER')")
-    public ResponseEntity<?> toggleFeaturedStatus(@PathVariable Long id) {
+    public ResponseEntity<?> toggleFeaturedStatus(@PathVariable String id) {
         try {
             ProductResponse response = productService.toggleFeaturedStatus(id);
             return ResponseEntity.ok(response);
@@ -371,7 +371,7 @@ public class ProductController {
     
     @PutMapping("/{id}/stock")
     @PreAuthorize("hasRole('MANUFACTURER')")
-    public ResponseEntity<?> updateStock(@PathVariable Long id, @RequestParam Integer stockQuantity) {
+    public ResponseEntity<?> updateStock(@PathVariable String id, @RequestParam Integer stockQuantity) {
         try {
             ProductResponse response = productService.updateStock(id, stockQuantity);
             return ResponseEntity.ok(response);
@@ -384,7 +384,7 @@ public class ProductController {
     
     @GetMapping("/manufacturer/{manufacturerId}/stats")
     @PreAuthorize("hasRole('MANUFACTURER')")
-    public ResponseEntity<?> getManufacturerProductStats(@PathVariable Long manufacturerId) {
+    public ResponseEntity<?> getManufacturerProductStats(@PathVariable String manufacturerId) {
         try {
             Map<String, Object> stats = new HashMap<>();
             stats.put("totalProducts", productService.getProductCountByManufacturer(manufacturerId));
@@ -400,6 +400,58 @@ public class ProductController {
             Map<String, Object> stats = new HashMap<>();
             stats.put("totalProducts", productService.getProductCountByCategory(category));
             return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+    
+    // Comprehensive search endpoint
+    
+    @GetMapping("/search")
+    public ResponseEntity<?> searchProducts(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String subcategory,
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        try {
+            Sort sort = sortDir.equalsIgnoreCase("desc") ? 
+                Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+            Pageable pageable = PageRequest.of(page, size, sort);
+            
+            Page<ProductResponse> products;
+            
+            // If query is provided, search by name or description
+            if (query != null && !query.trim().isEmpty()) {
+                products = productService.searchProductsByName(query, pageable);
+            }
+            // If category is provided, filter by category
+            else if (category != null && !category.trim().isEmpty()) {
+                products = productService.getProductsByCategory(category, pageable);
+            }
+            // If subcategory is provided, filter by subcategory
+            else if (subcategory != null && !subcategory.trim().isEmpty()) {
+                products = productService.getProductsBySubcategory(subcategory, pageable);
+            }
+            // If brand is provided, filter by brand
+            else if (brand != null && !brand.trim().isEmpty()) {
+                products = productService.getProductsByBrand(brand, pageable);
+            }
+            // If price range is provided, filter by price
+            else if (minPrice != null && maxPrice != null) {
+                products = productService.getProductsByPriceRange(minPrice, maxPrice, pageable);
+            }
+            // Otherwise, return all products
+            else {
+                products = productService.getAllProducts(pageable);
+            }
+            
+            return ResponseEntity.ok(products);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

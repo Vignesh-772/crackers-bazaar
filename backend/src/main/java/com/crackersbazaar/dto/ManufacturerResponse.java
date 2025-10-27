@@ -7,8 +7,8 @@ import java.time.LocalDateTime;
 
 public class ManufacturerResponse {
     
-    private Long id;
-    private Long userId;
+    private String id;
+    private String userId;
     private String companyName;
     private String contactPerson;
     private String email;
@@ -25,7 +25,7 @@ public class ManufacturerResponse {
     private ManufacturerStatus status;
     private Boolean verified;
     private String verificationNotes;
-    private Long verifiedBy;
+    private String verifiedBy;
     private LocalDateTime verifiedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -59,19 +59,19 @@ public class ManufacturerResponse {
     }
     
     // Getters and Setters
-    public Long getId() {
+    public String getId() {
         return id;
     }
     
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
     
-    public Long getUserId() {
+    public String getUserId() {
         return userId;
     }
     
-    public void setUserId(Long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
     
@@ -203,11 +203,11 @@ public class ManufacturerResponse {
         this.verificationNotes = verificationNotes;
     }
     
-    public Long getVerifiedBy() {
+    public String getVerifiedBy() {
         return verifiedBy;
     }
-    
-    public void setVerifiedBy(Long verifiedBy) {
+
+    public void setVerifiedBy(String verifiedBy) {
         this.verifiedBy = verifiedBy;
     }
     

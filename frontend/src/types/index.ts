@@ -7,7 +7,7 @@ export enum Role {
 }
 
 export interface User {
-  id: number;
+  id: string;
   username: string;
   email: string;
   firstName: string;
@@ -31,7 +31,7 @@ export interface RegisterRequest {
 
 export interface JwtResponse {
   token: string;
-  id: number;
+  id: string;
   username: string;
   email: string;
   firstName: string;
@@ -41,7 +41,7 @@ export interface JwtResponse {
 
 // Product Types
 export interface Product {
-  id: number;
+  id: string;
   name: string;
   description: string;
   price: number;
@@ -138,7 +138,7 @@ export enum ManufacturerStatus {
 }
 
 export interface Manufacturer {
-  id: number;
+  id: string;
   userId?: number;
   companyName: string;
   contactPerson: string;
@@ -196,6 +196,107 @@ export interface DashboardStats {
   inactiveCount: number;
   verifiedCount: number;
   unverifiedCount: number;
+}
+
+// Order Types
+export enum OrderStatus {
+  PENDING = "PENDING",
+  CONFIRMED = "CONFIRMED",
+  PROCESSING = "PROCESSING",
+  SHIPPED = "SHIPPED",
+  DELIVERED = "DELIVERED",
+  CANCELLED = "CANCELLED",
+  REFUNDED = "REFUNDED",
+}
+
+export interface OrderItem {
+  id: string;
+  productId: string;
+  productName: string;
+  productSku: string;
+  quantity: number;
+  unitPrice: number;
+  discount?: number;
+  totalPrice: number;
+  imageUrl?: string;
+  createdAt: string;
+}
+
+export interface Order {
+  id: string;
+  orderNumber: string;
+  userId: number;
+  userName: string;
+  userEmail: string;
+  status: OrderStatus;
+  subtotal: number;
+  tax?: number;
+  shippingCost?: number;
+  discount?: number;
+  total: number;
+  shippingAddress?: string;
+  shippingCity?: string;
+  shippingState?: string;
+  shippingPincode?: string;
+  shippingCountry?: string;
+  billingAddress?: string;
+  billingCity?: string;
+  billingState?: string;
+  billingPincode?: string;
+  billingCountry?: string;
+  contactEmail: string;
+  contactPhone: string;
+  paymentMethod?: string;
+  paymentStatus?: string;
+  paymentTransactionId?: string;
+  notes?: string;
+  trackingNumber?: string;
+  shippedAt?: string;
+  deliveredAt?: string;
+  cancelledAt?: string;
+  cancellationReason?: string;
+  orderItems: OrderItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OrderItemRequest {
+  productId: string;
+  quantity: number;
+  unitPrice?: number;
+}
+
+export interface OrderRequest {
+  items: OrderItemRequest[];
+  shippingAddress?: string;
+  shippingCity?: string;
+  shippingState?: string;
+  shippingPincode?: string;
+  shippingCountry?: string;
+  billingAddress?: string;
+  billingCity?: string;
+  billingState?: string;
+  billingPincode?: string;
+  billingCountry?: string;
+  contactEmail: string;
+  contactPhone: string;
+  paymentMethod?: string;
+  notes?: string;
+  shippingCost?: number;
+  discount?: number;
+}
+
+export interface OrderStatusUpdateRequest {
+  status: OrderStatus;
+  trackingNumber?: string;
+  cancellationReason?: string;
+  notes?: string;
+}
+
+export interface OrderStats {
+  totalOrders?: number;
+  totalSpent?: number;
+  totalRevenue?: number;
 }
 
 // API Error Type

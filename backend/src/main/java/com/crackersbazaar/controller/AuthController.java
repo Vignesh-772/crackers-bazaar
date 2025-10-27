@@ -108,5 +108,42 @@ public class AuthController {
         response.put("message", "User logged out successfully!");
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/validate")
+    public ResponseEntity<?> validateToken() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.isAuthenticated()) {
+                // Get the username from the authentication principal
+                String username = authentication.getName();
+                
+                // Fetch the user from the database using the username
+                User user = userService.findByUsername(username)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+                
+                Map<String, Object> response = new HashMap<>();
+                response.put("valid", true);
+                response.put("userId", user.getId());
+                response.put("username", user.getUsername());
+                response.put("email", user.getEmail());
+                response.put("firstName", user.getFirstName());
+                response.put("lastName", user.getLastName());
+                response.put("role", user.getRole());
+                response.put("isActive", user.getActive());
+                
+                return ResponseEntity.ok(response);
+            } else {
+                Map<String, Object> response = new HashMap<>();
+                response.put("valid", false);
+                response.put("message", "Token is invalid or expired");
+                return ResponseEntity.status(401).body(response);
+            }
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("valid", false);
+            response.put("message", "Token validation failed: " + e.getMessage());
+            return ResponseEntity.status(401).body(response);
+        }
+    }
 }
 

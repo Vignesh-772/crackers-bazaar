@@ -27,7 +27,7 @@ public class ProductService {
     @Autowired
     private ManufacturerRepository manufacturerRepository;
     
-    public ProductResponse createProduct(ProductRequest request, Long manufacturerId) {
+    public ProductResponse createProduct(ProductRequest request, String manufacturerId) {
         Manufacturer manufacturer = manufacturerRepository.findById(manufacturerId)
                 .orElseThrow(() -> new RuntimeException("Manufacturer not found with id: " + manufacturerId));
         
@@ -48,6 +48,7 @@ public class ProductService {
         }
         
         Product product = new Product();
+        product.setId(java.util.UUID.randomUUID().toString()); // Generate UUID as string
         setProductFields(request, product);
         product.setManufacturer(manufacturer);
         
@@ -55,7 +56,7 @@ public class ProductService {
         return new ProductResponse(savedProduct);
     }
     
-    public ProductResponse getProductById(Long id) {
+    public ProductResponse getProductById(String id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
         return new ProductResponse(product);
@@ -85,7 +86,7 @@ public class ProductService {
         return products.map(ProductResponse::new);
     }
     
-    public List<ProductResponse> getProductsByManufacturer(Long manufacturerId) {
+    public List<ProductResponse> getProductsByManufacturer(String manufacturerId) {
         Manufacturer manufacturer = manufacturerRepository.findById(manufacturerId)
                 .orElseThrow(() -> new RuntimeException("Manufacturer not found with id: " + manufacturerId));
         
@@ -95,7 +96,7 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
     
-    public Page<ProductResponse> getProductsByManufacturer(Long manufacturerId, Pageable pageable) {
+    public Page<ProductResponse> getProductsByManufacturer(String manufacturerId, Pageable pageable) {
         Manufacturer manufacturer = manufacturerRepository.findById(manufacturerId)
                 .orElseThrow(() -> new RuntimeException("Manufacturer not found with id: " + manufacturerId));
         
@@ -103,7 +104,7 @@ public class ProductService {
         return products.map(ProductResponse::new);
     }
     
-    public List<ProductResponse> getActiveProductsByManufacturer(Long manufacturerId) {
+    public List<ProductResponse> getActiveProductsByManufacturer(String manufacturerId) {
         Manufacturer manufacturer = manufacturerRepository.findById(manufacturerId)
                 .orElseThrow(() -> new RuntimeException("Manufacturer not found with id: " + manufacturerId));
         
@@ -113,7 +114,7 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
     
-    public Page<ProductResponse> getActiveProductsByManufacturer(Long manufacturerId, Pageable pageable) {
+    public Page<ProductResponse> getActiveProductsByManufacturer(String manufacturerId, Pageable pageable) {
         Manufacturer manufacturer = manufacturerRepository.findById(manufacturerId)
                 .orElseThrow(() -> new RuntimeException("Manufacturer not found with id: " + manufacturerId));
         
@@ -229,7 +230,7 @@ public class ProductService {
         return products.map(ProductResponse::new);
     }
     
-    public ProductResponse updateProduct(Long id, ProductRequest request) {
+    public ProductResponse updateProduct(String id, ProductRequest request) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
         
@@ -257,14 +258,14 @@ public class ProductService {
         return new ProductResponse(savedProduct);
     }
     
-    public void deleteProduct(Long id) {
+    public void deleteProduct(String id) {
         if (!productRepository.existsById(id)) {
             throw new RuntimeException("Product not found with id: " + id);
         }
         productRepository.deleteById(id);
     }
     
-    public ProductResponse toggleProductStatus(Long id) {
+    public ProductResponse toggleProductStatus(String id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
         
@@ -274,7 +275,7 @@ public class ProductService {
         return new ProductResponse(savedProduct);
     }
     
-    public ProductResponse toggleFeaturedStatus(Long id) {
+    public ProductResponse toggleFeaturedStatus(String id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
         
@@ -284,7 +285,7 @@ public class ProductService {
         return new ProductResponse(savedProduct);
     }
     
-    public ProductResponse updateStock(Long id, Integer newStockQuantity) {
+    public ProductResponse updateStock(String id, Integer newStockQuantity) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
         
@@ -298,7 +299,7 @@ public class ProductService {
         return new ProductResponse(savedProduct);
     }
     
-    public Long getProductCountByManufacturer(Long manufacturerId) {
+    public Long getProductCountByManufacturer(String manufacturerId) {
         Manufacturer manufacturer = manufacturerRepository.findById(manufacturerId)
                 .orElseThrow(() -> new RuntimeException("Manufacturer not found with id: " + manufacturerId));
         

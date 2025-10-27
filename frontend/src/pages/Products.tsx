@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,12 +9,28 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Search, ShoppingCart, Sparkles } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { productApi } from "@/lib/api";
+import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 const Products = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const { addToCart } = useCart();
+  const urlSearch = searchParams.get("search") || "";
+  
+  const [searchQuery, setSearchQuery] = useState(urlSearch);
+  const [debouncedSearch, setDebouncedSearch] = useState(urlSearch);
   const [page, setPage] = useState(0);
+
+  // Update search query when URL changes
+  useEffect(() => {
+    if (urlSearch) {
+      setSearchQuery(urlSearch);
+      setDebouncedSearch(urlSearch);
+    }
+  }, [urlSearch]);
 
   // Debounce search query
   useEffect(() => {
@@ -52,6 +68,16 @@ const Products = () => {
   if (error) {
     toast.error("Failed to load products. Please try again.");
   }
+
+  const handleAddToCart = (product: any) => {
+    addToCart(product, 1);
+    
+    if (!isAuthenticated) {
+      toast.info("Item added to cart! Login to checkout and sync your cart to your account.");
+    } else {
+      toast.success("Item added to cart!");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -130,6 +156,7 @@ const Products = () => {
                       <Button
                         className="flex-1"
                         disabled={!inStock}
+                        onClick={() => handleAddToCart(product)}
                       >
                         <ShoppingCart className="mr-2 h-4 w-4" />
                         Add to Cart

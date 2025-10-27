@@ -9,7 +9,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
 
 @Service
 @Transactional
@@ -83,7 +82,7 @@ public class ManufacturerUserService {
      */
     private String generateTemporaryPassword() {
         // Generate a secure temporary password
-        return "TempPass" + UUID.randomUUID().toString().substring(0, 8);
+        return "TempPass" + java.util.UUID.randomUUID().toString().substring(0, 8);
     }
     
     /**

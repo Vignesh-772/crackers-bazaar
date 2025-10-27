@@ -7,6 +7,12 @@ spring:
   profiles:
     active: dev
   
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
+  
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/crackers_bazaar}
     driver-class-name: org.postgresql.Driver
@@ -15,12 +21,19 @@ spring:
   
   jpa:
     hibernate:
-      ddl-auto: ${HIBERNATE_DDL_AUTO:update}
+      ddl-auto: ${HIBERNATE_DDL_AUTO:create-drop}
     show-sql: ${JPA_SHOW_SQL:true}
     properties:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema-uuid.sql
+      data-locations: classpath:data.sql
+      continue-on-error: false
 
 # JWT Configuration
 jwt:
@@ -52,14 +65,6 @@ aws:
       enabled: ${AWS_S3_LOCALSTACK_ENABLED:false}
       endpoint: ${AWS_S3_LOCALSTACK_ENDPOINT:http://localhost:4566}
 
-# Spring multipart configuration
-spring:
-  servlet:
-    multipart:
-      enabled: true
-      max-file-size: 10MB
-      max-request-size: 50MB
-
 logging:
   level:
     com.crackersbazaar: ${LOG_LEVEL_APP:DEBUG}
@@ -80,8 +85,15 @@ spring:
   
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     show-sql: true
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema-uuid.sql
+      data-locations: classpath:data.sql
+      continue-on-error: false
 
 ---
 # Production Profile

@@ -13,6 +13,7 @@ interface AuthContextType {
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => void;
   hasRole: (role: Role | Role[]) => boolean;
+  validateToken: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,22 +36,53 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Load user and token from localStorage on mount
+  // Load user and token from localStorage on mount and validate token
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
+    const initializeAuth = async () => {
+      const storedToken = localStorage.getItem("token");
+      const storedUser = localStorage.getItem("user");
 
-    if (storedToken && storedUser) {
-      try {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error("Failed to parse stored user:", error);
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+      if (storedToken && storedUser) {
+        try {
+          // Validate token with backend
+          const validationResult = await authApi.validateToken();
+          
+          if (validationResult.valid && validationResult.isActive) {
+            // Token is valid, update user data if needed
+            const userData: User = {
+              id: validationResult.userId!,
+              username: validationResult.username!,
+              email: validationResult.email!,
+              firstName: validationResult.firstName!,
+              lastName: validationResult.lastName!,
+              role: validationResult.role as Role,
+            };
+            
+            setToken(storedToken);
+            setUser(userData);
+            
+            // Update localStorage with fresh user data
+            localStorage.setItem("user", JSON.stringify(userData));
+          } else {
+            // Token is invalid or user is inactive, clear auth data
+            console.warn("Token validation failed:", validationResult.message);
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            setToken(null);
+            setUser(null);
+          }
+        } catch (error) {
+          console.error("Token validation failed:", error);
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          setToken(null);
+          setUser(null);
+        }
       }
-    }
-    setIsLoading(false);
+      setIsLoading(false);
+    };
+
+    initializeAuth();
   }, []);
 
   const login = async (credentials: LoginRequest) => {
@@ -74,7 +106,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       toast.success(`Welcome back, ${userData.firstName}!`);
 
-      // Navigate based on role
+      // Check if there's a redirect location from the auth page
+      const from = sessionStorage.getItem('authRedirect');
+      if (from && from !== '/auth') {
+        sessionStorage.removeItem('authRedirect');
+        navigate(from, { replace: true });
+        return;
+      }
+
+      // Navigate based on role if no redirect location
       switch (userData.role) {
         case "ADMIN":
         case "DASHBOARD_ADMIN":
@@ -125,6 +165,36 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     return user.role === role;
   };
 
+  const validateToken = async (): Promise<boolean> => {
+    try {
+      const validationResult = await authApi.validateToken();
+      
+      if (validationResult.valid && validationResult.isActive) {
+        // Update user data if needed
+        const userData: User = {
+          id: validationResult.userId!,
+          username: validationResult.username!,
+          email: validationResult.email!,
+          firstName: validationResult.firstName!,
+          lastName: validationResult.lastName!,
+          role: validationResult.role as Role,
+        };
+        
+        setUser(userData);
+        localStorage.setItem("user", JSON.stringify(userData));
+        return true;
+      } else {
+        // Token is invalid, logout user
+        logout();
+        return false;
+      }
+    } catch (error) {
+      console.error("Token validation failed:", error);
+      logout();
+      return false;
+    }
+  };
+
   const value: AuthContextType = {
     user,
     token,
@@ -134,6 +204,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     register,
     logout,
     hasRole,
+    validateToken,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

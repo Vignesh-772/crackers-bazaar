@@ -4,29 +4,39 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import CheckoutDialog from "@/components/CheckoutDialog";
+import LoginRequiredDialog from "@/components/LoginRequiredDialog";
+import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 const Cart = () => {
-  // Mock cart data
-  const cartItems = [
-    {
-      id: 1,
-      name: "Deluxe Sparklers Box",
-      price: 299,
-      quantity: 2,
-      image: "https://images.unsplash.com/photo-1484503369366-c546e5814e13?w=200",
-    },
-    {
-      id: 2,
-      name: "Golden Fountain",
-      price: 499,
-      quantity: 1,
-      image: "https://images.unsplash.com/photo-1467810563316-b5476525c0f9?w=200",
-    },
-  ];
-
-  const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const { toast } = useToast();
+  const { state, updateQuantity, removeFromCart, clearCart } = useCart();
+  const { isAuthenticated } = useAuth();
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  
+  const cartItems = state.items;
+  const subtotal = state.totalPrice;
   const shipping = 50;
   const total = subtotal + shipping;
+
+  const handleQuantityChange = (productId: string, newQuantity: number) => {
+    if (newQuantity <= 0) {
+      removeFromCart(productId);
+    } else {
+      updateQuantity(productId, newQuantity);
+    }
+  };
+
+  const handleCheckoutSuccess = () => {
+    toast({
+      title: "Order Placed Successfully",
+      description: "Your order has been placed and is being processed.",
+    });
+    clearCart();
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -48,33 +58,52 @@ const Cart = () => {
                 <CardContent className="p-6">
                   <div className="flex gap-4">
                     <img
-                      src={item.image}
-                      alt={item.name}
+                      src={item.product.imageUrls?.[0] || "https://images.unsplash.com/photo-1484503369366-c546e5814e13?w=200"}
+                      alt={item.product.name}
                       className="w-24 h-24 object-cover rounded-md"
                     />
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg mb-2">{item.name}</h3>
-                      <p className="text-primary font-bold mb-4">₹{item.price}</p>
+                      <h3 className="font-semibold text-lg mb-2">{item.product.name}</h3>
+                      <p className="text-primary font-bold mb-4">₹{item.product.price}</p>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        by {item.product.manufacturerName}
+                      </p>
                       
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2 border rounded-md">
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8"
+                            onClick={() => handleQuantityChange(item.product.id, item.quantity - 1)}
+                          >
                             <Minus className="h-4 w-4" />
                           </Button>
                           <span className="w-12 text-center">{item.quantity}</span>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8"
+                            onClick={() => handleQuantityChange(item.product.id, item.quantity + 1)}
+                            disabled={item.quantity >= item.product.stockQuantity}
+                          >
                             <Plus className="h-4 w-4" />
                           </Button>
                         </div>
                         
-                        <Button variant="ghost" size="icon" className="text-destructive">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="text-destructive"
+                          onClick={() => removeFromCart(item.product.id)}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
                     
                     <div className="text-right">
-                      <p className="font-bold text-lg">₹{item.price * item.quantity}</p>
+                      <p className="font-bold text-lg">₹{item.product.price * item.quantity}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -117,9 +146,29 @@ const Cart = () => {
                 <div className="space-y-3">
                   <Input placeholder="Enter coupon code" />
                   <Button variant="outline" className="w-full">Apply Coupon</Button>
-                  <Button className="w-full" size="lg" disabled={cartItems.length === 0}>
-                    Proceed to Checkout
-                  </Button>
+                  
+                  {isAuthenticated ? (
+                    <CheckoutDialog
+                      cartItems={cartItems.map(item => ({
+                        id: item.product.id,
+                        name: item.product.name,
+                        price: item.product.price,
+                        quantity: item.quantity,
+                        image: item.product.imageUrls?.[0]
+                      }))}
+                      subtotal={subtotal}
+                      shippingCost={shipping}
+                      total={total}
+                      onSuccess={handleCheckoutSuccess}
+                    />
+                  ) : (
+                    <Button 
+                      onClick={() => setShowLoginDialog(true)}
+                      className="w-full"
+                    >
+                      Login to Checkout
+                    </Button>
+                  )}
                 </div>
 
                 <div className="mt-6 text-center">
@@ -132,6 +181,19 @@ const Cart = () => {
           </div>
         </div>
       </div>
+      
+      <LoginRequiredDialog
+        open={showLoginDialog}
+        onOpenChange={setShowLoginDialog}
+        title="Login Required for Checkout"
+        description="You need to be logged in to place an order. Your cart items will be saved and synced to your account after login."
+        onLoginSuccess={() => {
+          toast({
+            title: "Welcome back!",
+            description: "Your cart has been synced to your account.",
+          });
+        }}
+      />
     </div>
   );
 };

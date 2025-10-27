@@ -30,7 +30,7 @@ public class ManufacturerController {
     public ResponseEntity<?> getMyProfile() {
         try {
             // Get user ID directly from JWT token
-            Long userId = securityUtils.getCurrentUserId();
+            String userId = securityUtils.getCurrentUserId();
             
             if (userId == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "User ID not found in token"));
@@ -48,7 +48,7 @@ public class ManufacturerController {
      */
     @GetMapping("/by-user/{userId}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('DASHBOARD_ADMIN')")
-    public ResponseEntity<?> getManufacturerByUserId(@PathVariable Long userId) {
+    public ResponseEntity<?> getManufacturerByUserId(@PathVariable String userId) {
         try {
             ManufacturerResponse manufacturer = manufacturerService.getManufacturerByUserId(userId);
             return ResponseEntity.ok(manufacturer);
