@@ -51,10 +51,11 @@ VALUES
 );
 
 -- Insert dummy manufacturer (after users to avoid circular dependency)
-INSERT INTO manufacturers (id, company_name, contact_person, email, phone_number, address, city, state, pincode, country, gst_number, pan_number, license_number, status, is_verified, user_id, created_at, updated_at)
+INSERT INTO manufacturers (id, company_name, company_legal_name, contact_person, email, phone_number, address, city, state, pincode, country, latitude, longitude, gst_number, pan_number, license_number, peso_license_number, peso_license_expiry, factory_license_number, factory_license_expiry, fire_noc_url, status, is_verified, user_id, created_at, updated_at)
 VALUES (
     '550e8400-e29b-41d4-a716-446655440004',
     'Sparkle Fireworks Ltd',
+    'Sparkle Fireworks Private Limited',
     'Rajesh Kumar',
     'rajesh@sparklefireworks.com',
     '9876543210',
@@ -63,9 +64,16 @@ VALUES (
     'Maharashtra',
     '400001',
     'India',
+    19.0760,  -- Mumbai latitude
+    72.8777,  -- Mumbai longitude
     '27ABCDE1234F1Z5',
     'ABCDE1234F',
     'LIC123456789',
+    'PESO2024001',
+    '2025-12-31',
+    'FACTORY2024001',
+    '2025-12-31',
+    'https://example.com/fire-noc-document.pdf',
     'APPROVED',
     true,
     '550e8400-e29b-41d4-a716-446655440001',

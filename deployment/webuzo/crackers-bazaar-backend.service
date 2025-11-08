@@ -1,0 +1,50 @@
+[Unit]
+Description=Crackers Bazaar Backend API Service
+After=network.target mysql.service
+Requires=mysql.service
+
+[Service]
+Type=simple
+User=webuzo
+Group=webuzo
+
+# Working directory
+WorkingDirectory=/home/webuzo/crackers-bazaar/backend
+
+# Environment file
+EnvironmentFile=/home/webuzo/crackers-bazaar/.env
+
+# Java executable
+ExecStart=/usr/bin/java \
+    -Xms512m \
+    -Xmx2048m \
+    -XX:+UseG1GC \
+    -XX:MaxGCPauseMillis=200 \
+    -Djava.security.egd=file:/dev/./urandom \
+    -Dspring.profiles.active=prod \
+    -jar /home/webuzo/crackers-bazaar/backend/target/crackers-bazaar-backend-1.0.0.jar
+
+# Restart policy
+Restart=always
+RestartSec=10
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=crackers-bazaar-backend
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/webuzo/crackers-bazaar/logs
+ReadWritePaths=/home/webuzo/crackers-bazaar/uploads
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+[Install]
+WantedBy=multi-user.target
+

@@ -50,7 +50,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-2 text-xl font-bold">
             <Sparkles className="text-primary" />
-            CrackersMart
+            Crackers Bazaar
           </Link>
 
           <div className="hidden md:flex items-center gap-6 flex-1 max-w-2xl mx-8">

@@ -14,9 +14,9 @@ spring:
       max-request-size: 50MB
   
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/crackers_bazaar}
-    driver-class-name: org.postgresql.Driver
-    username: ${DATABASE_USERNAME:postgres}
+    url: ${DATABASE_URL:jdbc:mysql://localhost:3306/crackers_bazaar?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DATABASE_USERNAME:root}
     password: ${DATABASE_PASSWORD:password}
   
   jpa:
@@ -26,7 +26,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        dialect: org.hibernate.dialect.MySQLDialect
     defer-datasource-initialization: true
   sql:
     init:
@@ -79,8 +79,8 @@ spring:
       on-profile: dev
   
   datasource:
-    url: jdbc:postgresql://localhost:5432/crackers_bazaar
-    username: postgres
+    url: jdbc:mysql://localhost:3306/crackers_bazaar?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
     password: password
   
   jpa:

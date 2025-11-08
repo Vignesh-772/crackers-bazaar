@@ -243,6 +243,7 @@ public class ManufacturerService {
 
     private void setManufacturer(ManufacturerRequest request, Manufacturer manufacturer) {
         manufacturer.setCompanyName(request.getCompanyName());
+        manufacturer.setCompanyLegalName(request.getCompanyLegalName());
         manufacturer.setContactPerson(request.getContactPerson());
         manufacturer.setEmail(request.getEmail());
         manufacturer.setPhoneNumber(request.getPhoneNumber());
@@ -254,6 +255,11 @@ public class ManufacturerService {
         manufacturer.setGstNumber(request.getGstNumber());
         manufacturer.setPanNumber(request.getPanNumber());
         manufacturer.setLicenseNumber(request.getLicenseNumber());
+        manufacturer.setLatitude(request.getLatitude());
+        manufacturer.setLongitude(request.getLongitude());
+        manufacturer.setPesoLicenseNumber(request.getPesoLicenseNumber());
+        manufacturer.setFactoryLicenseNumber(request.getFactoryLicenseNumber());
+        manufacturer.setFireNocUrl(request.getFireNocUrl());
 
         // Parse license validity if provided
         if (request.getLicenseValidity() != null && !request.getLicenseValidity().isEmpty()) {
@@ -264,6 +270,30 @@ public class ManufacturerService {
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new RuntimeException("Invalid license validity date format");
+            }
+        }
+        
+        // Parse PESO license expiry if provided
+        if (request.getPesoLicenseExpiry() != null && !request.getPesoLicenseExpiry().isEmpty()) {
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+                LocalDateTime pesoLicenseExpiry = LocalDateTime.parse(request.getPesoLicenseExpiry(), formatter);
+                manufacturer.setPesoLicenseExpiry(pesoLicenseExpiry);
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new RuntimeException("Invalid PESO license expiry date format");
+            }
+        }
+        
+        // Parse factory license expiry if provided
+        if (request.getFactoryLicenseExpiry() != null && !request.getFactoryLicenseExpiry().isEmpty()) {
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+                LocalDateTime factoryLicenseExpiry = LocalDateTime.parse(request.getFactoryLicenseExpiry(), formatter);
+                manufacturer.setFactoryLicenseExpiry(factoryLicenseExpiry);
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new RuntimeException("Invalid factory license expiry date format");
             }
         }
     }

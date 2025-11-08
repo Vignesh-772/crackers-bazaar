@@ -372,6 +372,79 @@ export const uploadApi = {
   },
 };
 
+// Compliance Tags APIs
+export const complianceApi = {
+  addTag: async (productId: string, tagType: string, tagValue: string) => {
+    const response = await apiClient.post("/admin/compliance-tags", null, {
+      params: { productId, tagType, tagValue },
+    });
+    return response.data;
+  },
+  getByProduct: async (productId: string) => {
+    const response = await apiClient.get(`/admin/compliance-tags/by-product/${productId}`);
+    return response.data;
+  },
+  getByType: async (tagType: string) => {
+    const response = await apiClient.get(`/admin/compliance-tags/by-type/${tagType}`);
+    return response.data;
+  },
+  deleteTag: async (id: string) => {
+    const response = await apiClient.delete(`/admin/compliance-tags/${id}`);
+    return response.data;
+  },
+};
+
+// Geofencing APIs
+export const geofencingApi = {
+  getAll: async () => {
+    const response = await apiClient.get("/admin/geofencing");
+    return response.data;
+  },
+  getActive: async () => {
+    const response = await apiClient.get("/admin/geofencing/active");
+    return response.data;
+  },
+  create: async (rule: any) => {
+    const response = await apiClient.post("/admin/geofencing", rule);
+    return response.data;
+  },
+  update: async (id: string, rule: any) => {
+    const response = await apiClient.put(`/admin/geofencing/${id}`, rule);
+    return response.data;
+  },
+  delete: async (id: string) => {
+    const response = await apiClient.delete(`/admin/geofencing/${id}`);
+    return response.data;
+  },
+};
+
+// User Admin APIs
+export const userAdminApi = {
+  updateRole: async (id: string, role: string) => {
+    const response = await apiClient.put(`/admin/users/${id}/role`, null, { params: { role } });
+    return response.data;
+  },
+  suspend: async (id: string) => {
+    const response = await apiClient.put(`/admin/users/${id}/suspend`);
+    return response.data;
+  },
+  activate: async (id: string) => {
+    const response = await apiClient.put(`/admin/users/${id}/activate`);
+    return response.data;
+  },
+};
+
+// Reports APIs
+export const reportsApi = {
+  exportAuditLogs: async (from: string, to: string) => {
+    const response = await apiClient.get(`/admin/reports/audit-logs/export`, {
+      params: { from, to },
+      responseType: "blob",
+    });
+    return response.data as Blob;
+  },
+};
+
 // Order APIs
 export const orderApi = {
   createOrder: async (data: OrderRequest): Promise<Order> => {

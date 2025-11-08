@@ -55,6 +55,26 @@ public class ManufacturerRequest {
     
     private String licenseValidity;
     
+    @Size(max = 200, message = "Company legal name must not exceed 200 characters")
+    private String companyLegalName;
+    
+    @Size(max = 50, message = "PESO license number must not exceed 50 characters")
+    private String pesoLicenseNumber;
+    
+    private String pesoLicenseExpiry;
+    
+    @Size(max = 50, message = "Factory license number must not exceed 50 characters")
+    private String factoryLicenseNumber;
+    
+    private String factoryLicenseExpiry;
+    
+    @Size(max = 500, message = "Fire NOC URL must not exceed 500 characters")
+    private String fireNocUrl;
+    
+    private java.math.BigDecimal latitude;
+    
+    private java.math.BigDecimal longitude;
+    
     // User credentials
     @NotBlank(message = "Username is required")
     @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
@@ -186,6 +206,70 @@ public class ManufacturerRequest {
     
     public void setLicenseValidity(String licenseValidity) {
         this.licenseValidity = licenseValidity;
+    }
+    
+    public String getCompanyLegalName() {
+        return companyLegalName;
+    }
+    
+    public void setCompanyLegalName(String companyLegalName) {
+        this.companyLegalName = companyLegalName;
+    }
+    
+    public String getPesoLicenseNumber() {
+        return pesoLicenseNumber;
+    }
+    
+    public void setPesoLicenseNumber(String pesoLicenseNumber) {
+        this.pesoLicenseNumber = pesoLicenseNumber;
+    }
+    
+    public String getPesoLicenseExpiry() {
+        return pesoLicenseExpiry;
+    }
+    
+    public void setPesoLicenseExpiry(String pesoLicenseExpiry) {
+        this.pesoLicenseExpiry = pesoLicenseExpiry;
+    }
+    
+    public String getFactoryLicenseNumber() {
+        return factoryLicenseNumber;
+    }
+    
+    public void setFactoryLicenseNumber(String factoryLicenseNumber) {
+        this.factoryLicenseNumber = factoryLicenseNumber;
+    }
+    
+    public String getFactoryLicenseExpiry() {
+        return factoryLicenseExpiry;
+    }
+    
+    public void setFactoryLicenseExpiry(String factoryLicenseExpiry) {
+        this.factoryLicenseExpiry = factoryLicenseExpiry;
+    }
+    
+    public String getFireNocUrl() {
+        return fireNocUrl;
+    }
+    
+    public void setFireNocUrl(String fireNocUrl) {
+        this.fireNocUrl = fireNocUrl;
+    }
+    
+    public java.math.BigDecimal getLatitude() {
+        return latitude;
+    }
+    
+    public void setLatitude(java.math.BigDecimal latitude) {
+        this.latitude = latitude;
+    }
+    
+    public java.math.BigDecimal getLongitude() {
+        return longitude;
+    }
+    
+    public void setLongitude(java.math.BigDecimal longitude) {
+        this.longitude = longitude;
     }
     
     public String getUsername() {

@@ -25,6 +25,37 @@ services:
       timeout: 5s
       retries: 5
 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: crackers-bazaar-backend-dev
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DATABASE_URL: jdbc:postgresql://postgres:5432/crackers_bazaar
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: password
+      JWT_SECRET: mySecretKey123456789012345678901234567890
+      STORAGE_TYPE: s3
+      AWS_S3_BUCKET_NAME: crackers-bazaar-images
+      AWS_S3_REGION: us-east-1
+      AWS_ACCESS_KEY: test
+      AWS_SECRET_KEY: test
+      AWS_S3_LOCALSTACK_ENABLED: "true"
+      AWS_S3_LOCALSTACK_ENDPOINT: http://localstack:4566
+      LOG_LEVEL_APP: DEBUG
+      LOG_LEVEL_WEB: DEBUG
+      LOG_LEVEL_SECURITY: DEBUG
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      localstack:
+        condition: service_started
+    networks:
+      - crackers-network-dev
+
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: crackers-bazaar-pgadmin-dev

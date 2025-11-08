@@ -139,8 +139,9 @@ export enum ManufacturerStatus {
 
 export interface Manufacturer {
   id: string;
-  userId?: number;
+  userId?: string;
   companyName: string;
+  companyLegalName?: string;
   contactPerson: string;
   email: string;
   phoneNumber: string;
@@ -149,14 +150,21 @@ export interface Manufacturer {
   state: string;
   pincode: string;
   country: string;
+  latitude?: number;
+  longitude?: number;
   gstNumber?: string;
   panNumber?: string;
   licenseNumber?: string;
   licenseValidity?: string;
+  pesoLicenseNumber?: string;
+  pesoLicenseExpiry?: string;
+  factoryLicenseNumber?: string;
+  factoryLicenseExpiry?: string;
+  fireNocUrl?: string;
   status: ManufacturerStatus;
   verified: boolean;
   verificationNotes?: string;
-  verifiedBy?: number;
+  verifiedBy?: string;
   verifiedAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -164,6 +172,7 @@ export interface Manufacturer {
 
 export interface ManufacturerRequest {
   companyName: string;
+  companyLegalName?: string;
   contactPerson: string;
   email: string;
   phoneNumber: string;
@@ -172,10 +181,17 @@ export interface ManufacturerRequest {
   state: string;
   pincode: string;
   country: string;
+  latitude?: number;
+  longitude?: number;
   gstNumber?: string;
   panNumber?: string;
   licenseNumber?: string;
   licenseValidity?: string;
+  pesoLicenseNumber?: string;
+  pesoLicenseExpiry?: string;
+  factoryLicenseNumber?: string;
+  factoryLicenseExpiry?: string;
+  fireNocUrl?: string;
   username: string;
   password: string;
   confirmPassword: string;

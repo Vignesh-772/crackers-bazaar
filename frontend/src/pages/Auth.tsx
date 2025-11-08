@@ -93,7 +93,7 @@ const Auth = () => {
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 text-3xl font-bold mb-2">
             <Sparkles className="text-primary" />
-            CrackersMart
+            Crackers Bazaar
           </Link>
           <p className="text-muted-foreground">Welcome to your festive store</p>
         </div>

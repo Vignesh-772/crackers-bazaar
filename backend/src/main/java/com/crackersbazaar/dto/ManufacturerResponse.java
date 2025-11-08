@@ -22,6 +22,14 @@ public class ManufacturerResponse {
     private String panNumber;
     private String licenseNumber;
     private LocalDateTime licenseValidity;
+    private String companyLegalName;
+    private String pesoLicenseNumber;
+    private LocalDateTime pesoLicenseExpiry;
+    private String factoryLicenseNumber;
+    private LocalDateTime factoryLicenseExpiry;
+    private String fireNocUrl;
+    private java.math.BigDecimal latitude;
+    private java.math.BigDecimal longitude;
     private ManufacturerStatus status;
     private Boolean verified;
     private String verificationNotes;
@@ -49,6 +57,14 @@ public class ManufacturerResponse {
         this.panNumber = manufacturer.getPanNumber();
         this.licenseNumber = manufacturer.getLicenseNumber();
         this.licenseValidity = manufacturer.getLicenseValidity();
+        this.companyLegalName = manufacturer.getCompanyLegalName();
+        this.pesoLicenseNumber = manufacturer.getPesoLicenseNumber();
+        this.pesoLicenseExpiry = manufacturer.getPesoLicenseExpiry();
+        this.factoryLicenseNumber = manufacturer.getFactoryLicenseNumber();
+        this.factoryLicenseExpiry = manufacturer.getFactoryLicenseExpiry();
+        this.fireNocUrl = manufacturer.getFireNocUrl();
+        this.latitude = manufacturer.getLatitude();
+        this.longitude = manufacturer.getLongitude();
         this.status = manufacturer.getStatus();
         this.verified = manufacturer.getVerified();
         this.verificationNotes = manufacturer.getVerificationNotes();
@@ -177,6 +193,70 @@ public class ManufacturerResponse {
     
     public void setLicenseValidity(LocalDateTime licenseValidity) {
         this.licenseValidity = licenseValidity;
+    }
+    
+    public String getCompanyLegalName() {
+        return companyLegalName;
+    }
+    
+    public void setCompanyLegalName(String companyLegalName) {
+        this.companyLegalName = companyLegalName;
+    }
+    
+    public String getPesoLicenseNumber() {
+        return pesoLicenseNumber;
+    }
+    
+    public void setPesoLicenseNumber(String pesoLicenseNumber) {
+        this.pesoLicenseNumber = pesoLicenseNumber;
+    }
+    
+    public LocalDateTime getPesoLicenseExpiry() {
+        return pesoLicenseExpiry;
+    }
+    
+    public void setPesoLicenseExpiry(LocalDateTime pesoLicenseExpiry) {
+        this.pesoLicenseExpiry = pesoLicenseExpiry;
+    }
+    
+    public String getFactoryLicenseNumber() {
+        return factoryLicenseNumber;
+    }
+    
+    public void setFactoryLicenseNumber(String factoryLicenseNumber) {
+        this.factoryLicenseNumber = factoryLicenseNumber;
+    }
+    
+    public LocalDateTime getFactoryLicenseExpiry() {
+        return factoryLicenseExpiry;
+    }
+    
+    public void setFactoryLicenseExpiry(LocalDateTime factoryLicenseExpiry) {
+        this.factoryLicenseExpiry = factoryLicenseExpiry;
+    }
+    
+    public String getFireNocUrl() {
+        return fireNocUrl;
+    }
+    
+    public void setFireNocUrl(String fireNocUrl) {
+        this.fireNocUrl = fireNocUrl;
+    }
+    
+    public java.math.BigDecimal getLatitude() {
+        return latitude;
+    }
+    
+    public void setLatitude(java.math.BigDecimal latitude) {
+        this.latitude = latitude;
+    }
+    
+    public java.math.BigDecimal getLongitude() {
+        return longitude;
+    }
+    
+    public void setLongitude(java.math.BigDecimal longitude) {
+        this.longitude = longitude;
     }
     
     public ManufacturerStatus getStatus() {

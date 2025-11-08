@@ -1,19 +1,47 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: crackers-bazaar-postgres
+  mysql:
+    image: mysql:8.0
+    container_name: crackers-bazaar-mysql
     restart: unless-stopped
     environment:
-      POSTGRES_DB: crackers_bazaar
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      MYSQL_DATABASE: crackers_bazaar
+      MYSQL_USER: crackers_user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: rootpassword
     ports:
-      - "5432:5432"
+      - "3306:3306"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mysql_data:/var/lib/mysql
       - ./init-scripts:/docker-entrypoint-initdb.d
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+      - crackers-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: crackers-bazaar-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DATABASE_URL: jdbc:mysql://mysql:3306/crackers_bazaar?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      DATABASE_USERNAME: crackers_user
+      DATABASE_PASSWORD: password
+      JWT_SECRET: mySecretKey123456789012345678901234567890
+      STORAGE_TYPE: s3
+      AWS_S3_BUCKET_NAME: crackers-bazaar-images
+      AWS_S3_REGION: us-east-1
+      AWS_ACCESS_KEY: test
+      AWS_SECRET_KEY: test
+      AWS_S3_LOCALSTACK_ENABLED: "true"
+      AWS_S3_LOCALSTACK_ENDPOINT: http://localstack:4566
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+      - localstack
     networks:
       - crackers-network
 
@@ -30,7 +58,7 @@ services:
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     depends_on:
-      - postgres
+      - mysql
     networks:
       - crackers-network
 
@@ -58,7 +86,7 @@ services:
       - crackers-network
 
 volumes:
-  postgres_data:
+  mysql_data:
     driver: local
   pgadmin_data:
     driver: local

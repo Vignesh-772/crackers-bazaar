@@ -22,9 +22,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Users, Package, ShoppingCart, TrendingUp, CheckCircle, XCircle, Trash2 } from "lucide-react";
+import { Users, Package, ShoppingCart, TrendingUp, CheckCircle, XCircle, Trash2, Eye, Tags, Map, FileText, Settings } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import AddManufacturerDialog from "@/components/AddManufacturerDialog";
+import ManufacturerDetailDialog from "@/components/ManufacturerDetailDialog";
+import ComplianceTagsManager from "@/components/ComplianceTagsManager";
+import GeofencingManager from "@/components/GeofencingManager";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import UserManagementPanel from "@/components/UserManagementPanel";
+import ReportsPanel from "@/components/ReportsPanel";
 import { manufacturerApi } from "@/lib/api";
 import { ManufacturerStatus, Manufacturer } from "@/types";
 import { toast } from "sonner";
@@ -36,6 +42,9 @@ const AdminDashboard = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [manufacturerToDelete, setManufacturerToDelete] = useState<Manufacturer | null>(null);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [selectedManufacturer, setSelectedManufacturer] = useState<Manufacturer | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("manufacturers");
 
   // Fetch dashboard stats
   const { data: stats, isLoading: statsLoading } = useQuery({
@@ -103,6 +112,16 @@ const AdminDashboard = () => {
     if (manufacturerToDelete) {
       deleteMutation.mutate(manufacturerToDelete.id);
     }
+  };
+
+  const handleViewDetails = (manufacturer: Manufacturer) => {
+    setSelectedManufacturer(manufacturer);
+    setDetailDialogOpen(true);
+  };
+
+  const handleStatusChange = (id: string, status: ManufacturerStatus) => {
+    handleVerify(id, status);
+    setDetailDialogOpen(false);
   };
 
   const getStatusVariant = (status: string) => {
@@ -195,121 +214,187 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Manufacturers</CardTitle>
-            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="PENDING">Pending</SelectItem>
-                <SelectItem value="APPROVED">Approved</SelectItem>
-                <SelectItem value="ACTIVE">Active</SelectItem>
-                <SelectItem value="REJECTED">Rejected</SelectItem>
-                <SelectItem value="SUSPENDED">Suspended</SelectItem>
-                <SelectItem value="INACTIVE">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
-          </CardHeader>
-          <CardContent>
-            {manufacturersLoading ? (
-              <div className="space-y-2">
-                {[...Array(5)].map((_, i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
-                ))}
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Company Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>City</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Verified</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {manufacturers.map((manufacturer) => (
-                    <TableRow key={manufacturer.id}>
-                      <TableCell className="font-medium">{manufacturer.companyName}</TableCell>
-                      <TableCell>{manufacturer.email}</TableCell>
-                      <TableCell>{manufacturer.city}</TableCell>
-                      <TableCell>
-                        <Badge variant={getStatusVariant(manufacturer.status)}>
-                          {manufacturer.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {manufacturer.verified ? (
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                        ) : (
-                          <XCircle className="h-4 w-4 text-muted-foreground" />
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2 flex-wrap">
-                          {manufacturer.status === "PENDING" && (
-                            <>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="manufacturers" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Manufacturers
+            </TabsTrigger>
+            <TabsTrigger value="compliance" className="flex items-center gap-2">
+              <Tags className="h-4 w-4" />
+              Compliance Tags
+            </TabsTrigger>
+            <TabsTrigger value="geofencing" className="flex items-center gap-2">
+              <Map className="h-4 w-4" />
+              Geofencing
+            </TabsTrigger>
+            <TabsTrigger value="users" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              User Management
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Reports
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Manufacturers Tab */}
+          <TabsContent value="manufacturers" className="space-y-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Manufacturer Onboarding</CardTitle>
+                <div className="flex gap-2">
+                  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Filter by status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="PENDING">Pending</SelectItem>
+                      <SelectItem value="APPROVED">Approved</SelectItem>
+                      <SelectItem value="ACTIVE">Active</SelectItem>
+                      <SelectItem value="REJECTED">Rejected</SelectItem>
+                      <SelectItem value="SUSPENDED">Suspended</SelectItem>
+                      <SelectItem value="INACTIVE">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <AddManufacturerDialog />
+                </div>
+              </CardHeader>
+              <CardContent>
+                {manufacturersLoading ? (
+                  <div className="space-y-2">
+                    {[...Array(5)].map((_, i) => (
+                      <Skeleton key={i} className="h-12 w-full" />
+                    ))}
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Company Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>City</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Verified</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {manufacturers.map((manufacturer) => (
+                        <TableRow key={manufacturer.id}>
+                          <TableCell className="font-medium">{manufacturer.companyName}</TableCell>
+                          <TableCell>{manufacturer.email}</TableCell>
+                          <TableCell>{manufacturer.city}</TableCell>
+                          <TableCell>
+                            <Badge variant={getStatusVariant(manufacturer.status)}>
+                              {manufacturer.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {manufacturer.verified ? (
+                              <CheckCircle className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <XCircle className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2 flex-wrap">
                               <Button
-                                variant="outline"
+                                variant="ghost"
                                 size="sm"
-                                onClick={() => handleVerify(manufacturer.id, ManufacturerStatus.APPROVED)}
+                                onClick={() => handleViewDetails(manufacturer)}
                               >
-                                Approve
+                                <Eye className="h-4 w-4" />
                               </Button>
+                              {manufacturer.status === "PENDING" && (
+                                <>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleVerify(manufacturer.id, ManufacturerStatus.APPROVED)}
+                                  >
+                                    Approve
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => handleVerify(manufacturer.id, ManufacturerStatus.REJECTED)}
+                                  >
+                                    Reject
+                                  </Button>
+                                </>
+                              )}
+                              {manufacturer.status === "APPROVED" && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleVerify(manufacturer.id, ManufacturerStatus.ACTIVE)}
+                                >
+                                  Activate
+                                </Button>
+                              )}
+                              {manufacturer.status === "ACTIVE" && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleVerify(manufacturer.id, ManufacturerStatus.SUSPENDED)}
+                                >
+                                  Suspend
+                                </Button>
+                              )}
                               <Button
-                                variant="destructive"
+                                variant="ghost"
                                 size="sm"
-                                onClick={() => handleVerify(manufacturer.id, ManufacturerStatus.REJECTED)}
+                                onClick={() => handleDeleteClick(manufacturer)}
+                                className="text-destructive hover:text-destructive"
                               >
-                                Reject
+                                <Trash2 className="h-4 w-4" />
                               </Button>
-                            </>
-                          )}
-                          {manufacturer.status === "APPROVED" && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleVerify(manufacturer.id, ManufacturerStatus.ACTIVE)}
-                            >
-                              Activate
-                            </Button>
-                          )}
-                          {manufacturer.status === "ACTIVE" && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleVerify(manufacturer.id, ManufacturerStatus.SUSPENDED)}
-                            >
-                              Suspend
-                            </Button>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteClick(manufacturer)}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-            {!manufacturersLoading && manufacturers.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                No manufacturers found
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+                {!manufacturersLoading && manufacturers.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No manufacturers found
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Compliance Tags Tab */}
+          <TabsContent value="compliance" className="space-y-4">
+            <ComplianceTagsManager />
+          </TabsContent>
+
+          {/* Geofencing Tab */}
+          <TabsContent value="geofencing" className="space-y-4">
+            <GeofencingManager />
+          </TabsContent>
+
+          {/* User Management Tab */}
+          <TabsContent value="users" className="space-y-4">
+            <UserManagementPanel />
+          </TabsContent>
+
+          {/* Reports Tab */}
+          <TabsContent value="reports" className="space-y-4">
+            <ReportsPanel />
+          </TabsContent>
+        </Tabs>
+
+        {/* Manufacturer Detail Dialog */}
+        <ManufacturerDetailDialog
+          manufacturer={selectedManufacturer}
+          open={detailDialogOpen}
+          onOpenChange={setDetailDialogOpen}
+          onStatusChange={handleStatusChange}
+        />
 
         {/* Delete Confirmation Dialog */}
         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

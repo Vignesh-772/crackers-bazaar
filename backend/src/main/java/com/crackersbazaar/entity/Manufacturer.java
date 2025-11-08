@@ -23,6 +23,10 @@ public class Manufacturer {
     @Column(name = "company_name")
     private String companyName;
     
+    @Size(max = 200)
+    @Column(name = "company_legal_name")
+    private String companyLegalName;
+    
     @NotBlank
     @Size(max = 50)
     @Column(name = "contact_person")
@@ -78,6 +82,30 @@ public class Manufacturer {
     
     @Column(name = "license_validity")
     private LocalDateTime licenseValidity;
+    
+    @Column(name = "latitude", precision = 10, scale = 8)
+    private java.math.BigDecimal latitude;
+    
+    @Column(name = "longitude", precision = 11, scale = 8)
+    private java.math.BigDecimal longitude;
+    
+    @Size(max = 50)
+    @Column(name = "peso_license_number")
+    private String pesoLicenseNumber;
+    
+    @Column(name = "peso_license_expiry")
+    private LocalDateTime pesoLicenseExpiry;
+    
+    @Size(max = 50)
+    @Column(name = "factory_license_number")
+    private String factoryLicenseNumber;
+    
+    @Column(name = "factory_license_expiry")
+    private LocalDateTime factoryLicenseExpiry;
+    
+    @Size(max = 500)
+    @Column(name = "fire_noc_url")
+    private String fireNocUrl;
     
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "user_id", unique = true)
@@ -138,6 +166,14 @@ public class Manufacturer {
     
     public void setCompanyName(String companyName) {
         this.companyName = companyName;
+    }
+    
+    public String getCompanyLegalName() {
+        return companyLegalName;
+    }
+    
+    public void setCompanyLegalName(String companyLegalName) {
+        this.companyLegalName = companyLegalName;
     }
     
     public String getContactPerson() {
@@ -234,6 +270,62 @@ public class Manufacturer {
     
     public void setLicenseValidity(LocalDateTime licenseValidity) {
         this.licenseValidity = licenseValidity;
+    }
+    
+    public java.math.BigDecimal getLatitude() {
+        return latitude;
+    }
+    
+    public void setLatitude(java.math.BigDecimal latitude) {
+        this.latitude = latitude;
+    }
+    
+    public java.math.BigDecimal getLongitude() {
+        return longitude;
+    }
+    
+    public void setLongitude(java.math.BigDecimal longitude) {
+        this.longitude = longitude;
+    }
+    
+    public String getPesoLicenseNumber() {
+        return pesoLicenseNumber;
+    }
+    
+    public void setPesoLicenseNumber(String pesoLicenseNumber) {
+        this.pesoLicenseNumber = pesoLicenseNumber;
+    }
+    
+    public LocalDateTime getPesoLicenseExpiry() {
+        return pesoLicenseExpiry;
+    }
+    
+    public void setPesoLicenseExpiry(LocalDateTime pesoLicenseExpiry) {
+        this.pesoLicenseExpiry = pesoLicenseExpiry;
+    }
+    
+    public String getFactoryLicenseNumber() {
+        return factoryLicenseNumber;
+    }
+    
+    public void setFactoryLicenseNumber(String factoryLicenseNumber) {
+        this.factoryLicenseNumber = factoryLicenseNumber;
+    }
+    
+    public LocalDateTime getFactoryLicenseExpiry() {
+        return factoryLicenseExpiry;
+    }
+    
+    public void setFactoryLicenseExpiry(LocalDateTime factoryLicenseExpiry) {
+        this.factoryLicenseExpiry = factoryLicenseExpiry;
+    }
+    
+    public String getFireNocUrl() {
+        return fireNocUrl;
+    }
+    
+    public void setFireNocUrl(String fireNocUrl) {
+        this.fireNocUrl = fireNocUrl;
     }
     
     public ManufacturerStatus getStatus() {
