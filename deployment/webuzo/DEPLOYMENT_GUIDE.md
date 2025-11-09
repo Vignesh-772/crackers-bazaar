@@ -120,21 +120,43 @@ mvn clean package -DskipTests
 
 ## 🚀 Step 5: Setup Systemd Service
 
+### Option A: Automated Setup (Recommended)
+
 ```bash
-# Copy systemd service file
+# Run the automated setup script
+sudo bash deployment/webuzo/setup-service.sh
+```
+
+This script will:
+1. Check prerequisites (JAR file, .env file)
+2. Copy service file to systemd directory
+3. Update paths automatically
+4. Reload systemd daemon
+5. Enable and start the service
+
+### Option B: Manual Setup
+
+```bash
+# Step 1: Copy systemd service file
 sudo cp deployment/webuzo/crackers-bazaar-backend.service /etc/systemd/system/
 
-# Edit service file with your paths
+# Step 2: Edit service file with your paths (if different from default)
 sudo nano /etc/systemd/system/crackers-bazaar-backend.service
 
-# Reload systemd and start service
+# Step 3: Reload systemd daemon (IMPORTANT!)
 sudo systemctl daemon-reload
+
+# Step 4: Enable service (starts on boot)
 sudo systemctl enable crackers-bazaar-backend
+
+# Step 5: Start service
 sudo systemctl start crackers-bazaar-backend
 
-# Check status
+# Step 6: Check status
 sudo systemctl status crackers-bazaar-backend
 ```
+
+**Important:** Always run `sudo systemctl daemon-reload` after copying or modifying service files!
 
 For multiple instances (load balancing):
 ```bash

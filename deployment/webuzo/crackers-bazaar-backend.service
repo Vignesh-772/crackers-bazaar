@@ -9,10 +9,14 @@ User=webuzo
 Group=webuzo
 
 # Working directory
-WorkingDirectory=/home/webuzo/crackers-bazaar/backend
+WorkingDirectory=/home/dhana/git/crackers-bazaar/backend
 
 # Environment file
-EnvironmentFile=/home/webuzo/crackers-bazaar/.env
+EnvironmentFile=/home/dhana/git/crackers-bazaar/.env
+
+# Create directories and fix permissions before starting
+ExecStartPre=/bin/bash -c 'mkdir -p /home/dhana/git/crackers-bazaar/backend /home/dhana/git/crackers-bazaar/logs /home/dhana/git/crackers-bazaar/uploads'
+ExecStartPre=/bin/bash -c 'chown -R webuzo:webuzo /home/dhana/git/crackers-bazaar || chown -R webuzo:webuzo /home/dhana/git/crackers-bazaar 2>/dev/null || true'
 
 # Java executable
 ExecStart=/usr/bin/java \
@@ -22,7 +26,7 @@ ExecStart=/usr/bin/java \
     -XX:MaxGCPauseMillis=200 \
     -Djava.security.egd=file:/dev/./urandom \
     -Dspring.profiles.active=prod \
-    -jar /home/webuzo/crackers-bazaar/backend/target/crackers-bazaar-backend-1.0.0.jar
+    -jar /home/dhana/git/crackers-bazaar/backend/target/crackers-bazaar-backend-1.0.0.jar
 
 # Restart policy
 Restart=always
@@ -33,13 +37,14 @@ StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=crackers-bazaar-backend
 
-# Security
+# Security (relaxed for directory access)
 NoNewPrivileges=true
 PrivateTmp=true
-ProtectSystem=strict
-ProtectHome=read-only
-ReadWritePaths=/home/webuzo/crackers-bazaar/logs
-ReadWritePaths=/home/webuzo/crackers-bazaar/uploads
+# ProtectSystem=strict  # Commented out to allow directory creation
+# ProtectHome=read-only  # Commented out to allow directory access
+ReadWritePaths=/home/dhana/git/crackers-bazaar/logs
+ReadWritePaths=/home/dhana/git/crackers-bazaar/uploads
+ReadWritePaths=/home/dhana/git/crackers-bazaar/backend
 
 # Resource limits
 LimitNOFILE=65536
